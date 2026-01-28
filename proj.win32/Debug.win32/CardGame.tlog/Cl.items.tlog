@@ -1,5 +1,9 @@
 H:\PROJECT_Cocos\CardGame\Classes\AppDelegate.cpp;H:\PROJECT_Cocos\CardGame\proj.win32\Debug.win32\AppDelegate.obj
 H:\PROJECT_Cocos\CardGame\Classes\configs\loaders\LevelConfigLoader.cpp;H:\PROJECT_Cocos\CardGame\proj.win32\Debug.win32\LevelConfigLoader.obj
 H:\PROJECT_Cocos\CardGame\Classes\HelloWorldScene.cpp;H:\PROJECT_Cocos\CardGame\proj.win32\Debug.win32\HelloWorldScene.obj
+H:\PROJECT_Cocos\CardGame\Classes\models\CardModel.cpp;H:\PROJECT_Cocos\CardGame\proj.win32\Debug.win32\CardModel.obj
+H:\PROJECT_Cocos\CardGame\Classes\models\GameModel.cpp;H:\PROJECT_Cocos\CardGame\proj.win32\Debug.win32\GameModel.obj
+H:\PROJECT_Cocos\CardGame\Classes\models\UndoModel.cpp;H:\PROJECT_Cocos\CardGame\proj.win32\Debug.win32\UndoModel.obj
+H:\PROJECT_Cocos\CardGame\Classes\services\GameModelFromLevelGenerator.cpp;H:\PROJECT_Cocos\CardGame\proj.win32\Debug.win32\GameModelFromLevelGenerator.obj
 H:\PROJECT_Cocos\CardGame\Classes\utils\CommonUtils.cpp;H:\PROJECT_Cocos\CardGame\proj.win32\Debug.win32\CommonUtils.obj
 H:\PROJECT_Cocos\CardGame\proj.win32\main.cpp;H:\PROJECT_Cocos\CardGame\proj.win32\Debug.win32\main.obj

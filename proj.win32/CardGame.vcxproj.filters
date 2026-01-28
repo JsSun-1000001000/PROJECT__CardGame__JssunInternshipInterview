@@ -23,6 +23,10 @@
     </ClCompile>
     <ClCompile Include="..\Classes\utils\CommonUtils.cpp" />
     <ClCompile Include="..\Classes\configs\loaders\LevelConfigLoader.cpp" />
+    <ClCompile Include="..\Classes\models\CardModel.cpp" />
+    <ClCompile Include="..\Classes\models\UndoModel.cpp" />
+    <ClCompile Include="..\Classes\services\GameModelFromLevelGenerator.cpp" />
+    <ClCompile Include="..\Classes\models\GameModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -38,6 +42,10 @@
     <ClInclude Include="..\Classes\utils\CardEnum.h" />
     <ClInclude Include="..\Classes\configs\models\LevelConfig.h" />
     <ClInclude Include="..\Classes\configs\loaders\LevelConfigLoader.h" />
+    <ClInclude Include="..\Classes\models\CardModel.h" />
+    <ClInclude Include="..\Classes\models\UndoModel.h" />
+    <ClInclude Include="..\Classes\services\GameModelFromLevelGenerator.h" />
+    <ClInclude Include="..\Classes\models\GameModel.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="game.rc">

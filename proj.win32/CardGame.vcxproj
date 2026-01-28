@@ -78,7 +78,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(EngineRoot);$(EngineRoot)external;$(EngineRoot)cocos\audio\include;$(EngineRoot)external\chipmunk\include\chipmunk;$(EngineRoot)extensions;..\Classes;..;%(AdditionalIncludeDirectories);$(_COCOS_HEADER_WIN32_BEGIN);$(_COCOS_HEADER_WIN32_END)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineRoot);$(EngineRoot)external;$(EngineRoot)cocos\audio\include;$(EngineRoot)external\chipmunk\include\chipmunk;$(EngineRoot)extensions;..\Classes;.\rapidjson;..;%(AdditionalIncludeDirectories);$(_COCOS_HEADER_WIN32_BEGIN);$(_COCOS_HEADER_WIN32_END)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USE_MATH_DEFINES;GL_GLEXT_PROTOTYPES;CC_ENABLE_CHIPMUNK_INTEGRATION=1;COCOS2D_DEBUG=1;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -154,6 +154,10 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)\Resources\" /D /E /I /F /Y
     <ClCompile Include="..\Classes\AppDelegate.cpp" />
     <ClCompile Include="..\Classes\configs\loaders\LevelConfigLoader.cpp" />
     <ClCompile Include="..\Classes\HelloWorldScene.cpp" />
+    <ClCompile Include="..\Classes\models\CardModel.cpp" />
+    <ClCompile Include="..\Classes\models\GameModel.cpp" />
+    <ClCompile Include="..\Classes\models\UndoModel.cpp" />
+    <ClCompile Include="..\Classes\services\GameModelFromLevelGenerator.cpp" />
     <ClCompile Include="..\Classes\utils\CommonUtils.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -162,6 +166,10 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)\Resources\" /D /E /I /F /Y
     <ClInclude Include="..\Classes\configs\loaders\LevelConfigLoader.h" />
     <ClInclude Include="..\Classes\configs\models\LevelConfig.h" />
     <ClInclude Include="..\Classes\HelloWorldScene.h" />
+    <ClInclude Include="..\Classes\models\CardModel.h" />
+    <ClInclude Include="..\Classes\models\GameModel.h" />
+    <ClInclude Include="..\Classes\models\UndoModel.h" />
+    <ClInclude Include="..\Classes\services\GameModelFromLevelGenerator.h" />
     <ClInclude Include="..\Classes\utils\CardEnum.h" />
     <ClInclude Include="..\Classes\utils\CommonUtils.h" />
     <ClInclude Include="main.h" />
