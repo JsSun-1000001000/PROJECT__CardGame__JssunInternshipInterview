@@ -14,11 +14,11 @@
 enum class CardSuitType
 {
     CST_NONE = -1,
-    CST_HEART,     // 红桃
-    CST_DIAMOND,   // 方块
-    CST_CLUB,      // 梅花
-    CST_SPADE,     // 黑桃
-    CST_NUM_SUITS
+    CST_HEARTS,     // 红桃
+    CST_DIAMONDS,   // 方块
+    CST_CLUBS,      // 梅花
+    CST_SPADES,     // 黑桃
+    CST_NUM_CARD_SUIT_TYPES
 };
 
 // 卡牌牌面类型
@@ -38,5 +38,5 @@ enum class CardFaceType
     CFT_JACK,      // J
     CFT_QUEEN,     // Q
     CFT_KING,      // K
-    CFT_NUM_FACES
+    CFT_NUM_FACE_TYPES
 };

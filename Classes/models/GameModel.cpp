@@ -109,3 +109,51 @@ bool GameModel::deserialize(const std::string& jsonStr)
 
     return true;
 }
+
+
+CardModel* GameModel::getCardById(int id) const
+{
+    if (baseCard && baseCard->cardId == id) return baseCard;
+    for (auto c : playfieldCards) if (c && c->cardId == id) return c;
+    for (auto c : reserveCards) if (c && c->cardId == id) return c;
+    return nullptr;
+}
+
+void GameModel::setBaseCard(CardModel* card)
+{
+    if (!card) return;
+    // 从 reserveCards 中移除（如果存在）
+    reserveCards.erase(std::remove(reserveCards.begin(), reserveCards.end(), card), reserveCards.end());
+    // 从 playfield 中也尝试移除（保险）
+    playfieldCards.erase(std::remove(playfieldCards.begin(), playfieldCards.end(), card), playfieldCards.end());
+    // 设置底牌并更新 areaType
+    baseCard = card;
+    baseCard->areaType = CardAreaType::CAT_BASE_STACK;
+}
+
+void GameModel::moveCard(CardModel* card, CardAreaType destArea)
+{
+    if (!card) return;
+
+    // 先从所有容器中移除
+    playfieldCards.erase(std::remove(playfieldCards.begin(), playfieldCards.end(), card), playfieldCards.end());
+    reserveCards.erase(std::remove(reserveCards.begin(), reserveCards.end(), card), reserveCards.end());
+    if (baseCard == card) baseCard = nullptr;
+
+    // 再根据目标区域放入对应容器 / 更新 baseCard
+    card->areaType = destArea;
+    switch (destArea)
+    {
+    case CardAreaType::CAT_BASE_STACK:
+        baseCard = card;
+        break;
+    case CardAreaType::CAT_PLAYFIELD:
+        playfieldCards.push_back(card);
+        break;
+    case CardAreaType::CAT_RESERVE_STACK:
+        reserveCards.push_back(card);
+        break;
+    default:
+        break;
+    }
+}

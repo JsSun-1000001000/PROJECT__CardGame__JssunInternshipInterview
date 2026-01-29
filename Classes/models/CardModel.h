@@ -12,9 +12,20 @@
 #include "cocos2d.h"
 #include "../Classes/utils/CardEnum.h"
 
+ // 卡牌在游戏中的区域（控制器中使用的枚举）
+enum class CardAreaType
+{
+    CAT_NONE = -1,
+    CAT_PLAYFIELD,
+    CAT_BASE_STACK,
+    CAT_RESERVE_STACK
+};
+
+
 class CardModel : public cocos2d::Ref
 {
 public:
+
     /** 卡牌状态枚举 */
     enum class State
     {
@@ -50,4 +61,18 @@ public:
     State state = State::COVERED;
 
 
+    CardAreaType areaType = CardAreaType::CAT_NONE;
+    bool isRevealed = false;
+
+    // 检查当前卡牌是否被指定卡覆盖（简单占位实现）
+    // 实际游戏中应根据布局/坐标/层级实现更精确逻辑
+    bool isCoveredBy(const CardModel* other) const
+    {
+        // 占位：返回 false 表示未被覆盖；可替换为真实逻辑
+        // 例如：基于 position 或一些覆盖关系表判断
+        (void)other;
+        return false;
+    }
+
 };
+

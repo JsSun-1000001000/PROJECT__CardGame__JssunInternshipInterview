@@ -27,6 +27,15 @@
     <ClCompile Include="..\Classes\models\UndoModel.cpp" />
     <ClCompile Include="..\Classes\services\GameModelFromLevelGenerator.cpp" />
     <ClCompile Include="..\Classes\models\GameModel.cpp" />
+    <ClCompile Include="..\Classes\views\CardView.cpp" />
+    <ClCompile Include="..\Classes\views\GameView.cpp" />
+    <ClCompile Include="..\Classes\utils\CardTextureUtils.cpp" />
+    <ClCompile Include="..\Classes\controllers\GameController.cpp" />
+    <ClCompile Include="..\Classes\controllers\PlayFieldController.cpp" />
+    <ClCompile Include="..\Classes\controllers\StackController.cpp" />
+    <ClCompile Include="..\Classes\services\MatchingService.cpp" />
+    <ClCompile Include="..\Classes\services\RecordService.cpp" />
+    <ClCompile Include="..\Classes\controllers\HandAreaController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -46,6 +55,15 @@
     <ClInclude Include="..\Classes\models\UndoModel.h" />
     <ClInclude Include="..\Classes\services\GameModelFromLevelGenerator.h" />
     <ClInclude Include="..\Classes\models\GameModel.h" />
+    <ClInclude Include="..\Classes\views\CardView.h" />
+    <ClInclude Include="..\Classes\views\GameView.h" />
+    <ClInclude Include="..\Classes\utils\CardTextureUtils.h" />
+    <ClInclude Include="..\Classes\controllers\GameController.h" />
+    <ClInclude Include="..\Classes\controllers\PlayFieldController.h" />
+    <ClInclude Include="..\Classes\controllers\StackController.h" />
+    <ClInclude Include="..\Classes\services\MatchingService.h" />
+    <ClInclude Include="..\Classes\services\RecordService.h" />
+    <ClInclude Include="..\Classes\controllers\HandAreaController.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="game.rc">
