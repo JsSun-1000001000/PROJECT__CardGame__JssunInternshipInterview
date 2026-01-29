@@ -49,6 +49,11 @@ public:
     // ---------------- 事件回调 ----------------
     std::function<void(int cardId)> onCardClicked;  // 卡牌点击事件转发
 
+    //-------------------------------------------
+    cocos2d::Node* getReserveLayer() const;
+    void removeReserveCardView(int cardId);
+    CardView* updateBaseCardView(CardModel* newBaseCard);
+
 private:
     /**
      * @brief 根据卡牌状态添加到对应父节点

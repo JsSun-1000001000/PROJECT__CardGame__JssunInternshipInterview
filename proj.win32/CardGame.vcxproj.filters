@@ -36,6 +36,8 @@
     <ClCompile Include="..\Classes\services\MatchingService.cpp" />
     <ClCompile Include="..\Classes\services\RecordService.cpp" />
     <ClCompile Include="..\Classes\controllers\HandAreaController.cpp" />
+    <ClCompile Include="..\Classes\controllers\DesktopAreaController.cpp" />
+    <ClCompile Include="..\Classes\controllers\ReserveStackController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -64,6 +66,8 @@
     <ClInclude Include="..\Classes\services\MatchingService.h" />
     <ClInclude Include="..\Classes\services\RecordService.h" />
     <ClInclude Include="..\Classes\controllers\HandAreaController.h" />
+    <ClInclude Include="..\Classes\controllers\DesktopAreaController.h" />
+    <ClInclude Include="..\Classes\controllers\ReserveStackController.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="game.rc">

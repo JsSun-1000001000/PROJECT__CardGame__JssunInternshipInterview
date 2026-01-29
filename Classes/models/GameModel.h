@@ -44,5 +44,14 @@ public:
     // 将卡牌移动到目标区域（最小实现：更新容器和 areaType）
     void moveCard(CardModel* card, CardAreaType destArea);
 
+    //--------------------------------------------------
+    const std::vector<CardModel*>& getReserveStack() const;
+    void setReserveStack(const std::vector<CardModel*>& reserveStack);
+    bool isReserveStackEmpty() const;
+
+private:
+    std::vector<CardModel*> _reserveStack; // 备用牌堆数据
+
+
 };
 
