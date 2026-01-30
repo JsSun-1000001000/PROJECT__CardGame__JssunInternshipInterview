@@ -24,8 +24,9 @@ bool MatchingService::isCardMatchable(CardModel* card) const
 {
     if (!_currentBaseCard || !card) return false;
 
-    // 示例实现：比较卡牌的数值是否相等，或者可以调整逻辑。
-    return card->faceType == _currentBaseCard->faceType;
+    // ???????????A?2?K?Q?
+    int diff = abs(static_cast<int>(card->faceType) - static_cast<int>(_currentBaseCard->faceType));
+    return diff == 1;
 }
 
 bool MatchingService::isConsecutive(CardModel* card1, CardModel* card2) const

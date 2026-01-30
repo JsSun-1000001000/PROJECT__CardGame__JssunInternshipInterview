@@ -8,7 +8,7 @@
 #pragma once
 
 #include "cocos2d.h"
-#include "../Classes/utils/CardEnum.h"
+#include "utils/CardEnum.h"
 
 // 单张卡牌的配置结构
 struct CardConfig

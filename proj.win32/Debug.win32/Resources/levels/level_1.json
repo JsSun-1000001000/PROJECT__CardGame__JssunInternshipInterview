@@ -1,0 +1,13 @@
+{
+    "Playfield": [
+        {"CardFace": 1, "CardSuit": 0, "Position": {"x": 200, "y": 1200}},
+        {"CardFace": 2, "CardSuit": 1, "Position": {"x": 400, "y": 1200}},
+        {"CardFace": 3, "CardSuit": 2, "Position": {"x": 600, "y": 1200}},
+        {"CardFace": 0, "CardSuit": 3, "Position": {"x": 800, "y": 1200}}
+    ],
+    "Stack": [
+        {"CardFace": 0, "CardSuit": 0, "Position": {"x": 0, "y": 0}},
+        {"CardFace": 5, "CardSuit": 1, "Position": {"x": 0, "y": 0}},
+        {"CardFace": 6, "CardSuit": 2, "Position": {"x": 0, "y": 0}}
+    ]
+}

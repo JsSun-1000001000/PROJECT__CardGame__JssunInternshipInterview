@@ -41,6 +41,7 @@ void GameController::startGame()
 {
     CCLOG("Game started");
     _isGameOver = false;
+    _matchingService->updateCurrentBaseCard(_gameModel->getBaseCard());
     _playFieldController->initPlayField();
     _stackController->initStacks();
 }

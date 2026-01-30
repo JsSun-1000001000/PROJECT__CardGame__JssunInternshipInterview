@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include "../Classes/models/GameModel.h"
-#include "../Classes/configs/models/LevelConfig.h"
+#include "models/GameModel.h"
+#include "configs/models/LevelConfig.h"
 
 class GameModelFromLevelGenerator
 {

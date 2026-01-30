@@ -10,7 +10,7 @@
 #pragma once
 
 #include "cocos2d.h"
-#include "../Classes/utils/CardEnum.h"
+#include "utils/CardEnum.h"
 
  // 卡牌在游戏中的区域（控制器中使用的枚举）
 enum class CardAreaType

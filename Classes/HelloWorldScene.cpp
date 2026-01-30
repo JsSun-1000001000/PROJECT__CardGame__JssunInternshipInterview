@@ -23,8 +23,10 @@
  ****************************************************************************/
 
 #include "HelloWorldScene.h"
-#include "SimpleAudioEngine.h"
 #include "controllers/GameController.h"
+#include "views/GameView.h"
+#include "configs/loaders/LevelConfigLoader.h"
+#include "services/GameModelFromLevelGenerator.h"
 
 USING_NS_CC;
 
@@ -84,9 +86,25 @@ bool HelloWorld::init()
     /////////////////////////////
     // 3. add your codes below...
 
-    auto gameController = GameController::create();
+    const int levelId = 1;
+    auto levelConfig = LevelConfigLoader::loadLevel(levelId);
+    if (!levelConfig) {
+        CCLOG("HelloWorld: Failed to load level %d", levelId);
+        return true;
+    }
+    auto gameModel = GameModelFromLevelGenerator::generateGameModel(levelConfig, levelId);
+    if (!gameModel) {
+        CCLOG("HelloWorld: Failed to create game model");
+        return true;
+    }
+    auto gameView = GameView::create();
+    if (!gameView) {
+        CCLOG("HelloWorld: Failed to create game view");
+        return true;
+    }
+    auto gameController = GameController::create(gameModel, gameView);
     if (gameController) {
-        gameController->startGame(1);
+        gameController->startGame();
         this->addChild(gameController);
     }
     return true;
@@ -94,7 +112,7 @@ bool HelloWorld::init()
     // add a label shows "Hello World"
     // create and initialize a label
 
-    auto label = Label::createWithTTF("Ö½ÅÆÏû³ýÓÎÏ·", "fonts/Marker Felt.ttf", 24);
+    auto label = Label::createWithTTF("??????????", "fonts/Marker Felt.ttf", 24);
     if (label == nullptr)
     {
         problemLoading("'fonts/Marker Felt.ttf'");

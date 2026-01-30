@@ -9,24 +9,27 @@ GameModel* GameModelFromLevelGenerator::generateGameModel(const LevelConfig* lev
     gameModel->currentLevelId = levelId;
     int cardId = 0;
 
-    // 生成主牌区卡牌：初始状态为覆盖
+    // ???????????????
     for (const auto& cardConfig : levelConfig->playfieldCards)
     {
         auto cardModel = createCardModelFromConfig(cardConfig, cardId++);
         cardModel->state = CardModel::State::COVERED;
+        cardModel->areaType = CardAreaType::CAT_PLAYFIELD;
         gameModel->playfieldCards.push_back(cardModel);
     }
 
-    // 生成底牌：初始状态为翻开
+    // ????????????
     auto baseModel = createCardModelFromConfig(levelConfig->baseCard, cardId++);
     baseModel->state = CardModel::State::FLIPPED;
+    baseModel->areaType = CardAreaType::CAT_BASE_STACK;
     gameModel->baseCard = baseModel;
 
-    // 生成备用牌堆：初始状态为覆盖
+    // ??????????????
     for (const auto& cardConfig : levelConfig->reserveCards)
     {
         auto cardModel = createCardModelFromConfig(cardConfig, cardId++);
         cardModel->state = CardModel::State::COVERED;
+        cardModel->areaType = CardAreaType::CAT_RESERVE_STACK;
         gameModel->reserveCards.push_back(cardModel);
     }
 
