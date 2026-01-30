@@ -35,4 +35,18 @@ std::vector<std::string> RecordService::getOperationRecords() const
 void RecordService::clearRecords()
 {
     _records.clear();
+    _undoStack.clear();
+}
+
+void RecordService::addUndoRecord(int movedCardId, int oldBaseId, bool fromPlayfield, const cocos2d::Vec2& oldPos)
+{
+    _undoStack.push_back({ movedCardId, oldBaseId, fromPlayfield, oldPos });
+}
+
+UndoEntry RecordService::popUndoRecord()
+{
+    if (_undoStack.empty()) return { -1, -1, false, cocos2d::Vec2::ZERO };
+    auto entry = _undoStack.back();
+    _undoStack.pop_back();
+    return entry;
 }

@@ -9,7 +9,7 @@ GameModel* GameModel::create()
     auto model = new (std::nothrow) GameModel();
     if (model && model->init())
     {
-        model->autorelease();  // º”»Î◊‘∂Ø Õ∑≈≥ÿ
+        model->autorelease();  // ???????????
         return model;
     }
     CC_SAFE_DELETE(model);
@@ -18,20 +18,18 @@ GameModel* GameModel::create()
 
 bool GameModel::init()
 {
-    // ≥ı ºªØƒ¨»œø’ø®≈∆
-    baseCard = CardModel::create();
-    //≥ı ºªØ¬ﬂº≠
+    baseCard = nullptr;
     return true;
 }
 
 //bool GameModel::init()
 //{
-//    // ±ÿ–Îµ˜”√ª˘¿‡µƒinit()
+//    // ???????????init()
 //    if (!Ref::init())
 //    {
 //        return false;
 //    }
-//    // ≥ı ºªØƒ¨»œø’ø®≈∆
+//    // ????????????
 //    baseCard = CardModel::create();
 //    return true;
 //}
@@ -44,7 +42,7 @@ std::string GameModel::serialize() const
 
     doc.AddMember("currentLevelId", currentLevelId, allocator);
 
-    // –Ú¡–ªØ÷˜≈∆«¯ø®≈∆
+    // ???????????????
     rapidjson::Value playfieldArr(rapidjson::kArrayType);
     for (const auto& card : playfieldCards)
     {
@@ -54,12 +52,14 @@ std::string GameModel::serialize() const
     }
     doc.AddMember("playfieldCards", playfieldArr, allocator);
 
-    // –Ú¡–ªØµ◊≈∆
-    rapidjson::Value baseCardJson(rapidjson::kStringType);
-    baseCardJson.SetString(baseCard->serialize().c_str(), allocator);
-    doc.AddMember("baseCard", baseCardJson, allocator);
+    // ?????????
+    if (baseCard) {
+        rapidjson::Value baseCardJson(rapidjson::kStringType);
+        baseCardJson.SetString(baseCard->serialize().c_str(), allocator);
+        doc.AddMember("baseCard", baseCardJson, allocator);
+    }
 
-    // –Ú¡–ªØ±∏”√≈∆∂—
+    // ????????????
     rapidjson::Value reserveArr(rapidjson::kArrayType);
     for (const auto& card : reserveCards)
     {
@@ -86,7 +86,7 @@ bool GameModel::deserialize(const std::string& jsonStr)
     currentLevelId = doc["currentLevelId"].GetInt();
     topPlayfieldCardId = doc["topPlayfieldCardId"].GetInt();
 
-    // ∑¥–Ú¡–ªØ÷˜≈∆«¯ø®≈∆
+    // ?????????????????
     const auto& playfieldArr = doc["playfieldCards"];
     for (rapidjson::SizeType i = 0; i < playfieldArr.Size(); ++i)
     {
@@ -95,10 +95,12 @@ bool GameModel::deserialize(const std::string& jsonStr)
         playfieldCards.push_back(card);
     }
 
-    // ∑¥–Ú¡–ªØµ◊≈∆
-    baseCard->deserialize(doc["baseCard"].GetString());
+    // ???????????
+    if (doc.HasMember("baseCard") && baseCard) {
+        baseCard->deserialize(doc["baseCard"].GetString());
+    }
 
-    // ∑¥–Ú¡–ªØ±∏”√≈∆∂—
+    // ??????????????
     const auto& reserveArr = doc["reserveCards"];
     for (rapidjson::SizeType i = 0; i < reserveArr.Size(); ++i)
     {
@@ -113,7 +115,8 @@ bool GameModel::deserialize(const std::string& jsonStr)
 
 CardModel* GameModel::getCardById(int id) const
 {
-    if (baseCard && baseCard->cardId == id) return baseCard;
+    // ‰ªÖÂú® baseCard ‰∏∫ÊúâÊïàÊåáÈíàÊó∂ËÆøÈóÆÔºåÈÅøÂÖçÊÇ¨Á©∫ÊåáÈíàÔºàÂ¶Ç 0xDDDDDDDDÔºâ
+    if (baseCard != nullptr && baseCard->cardId == id) return baseCard;
     for (auto c : playfieldCards) if (c && c->cardId == id) return c;
     for (auto c : reserveCards) if (c && c->cardId == id) return c;
     return nullptr;
@@ -122,11 +125,14 @@ CardModel* GameModel::getCardById(int id) const
 void GameModel::setBaseCard(CardModel* card)
 {
     if (!card) return;
-    // ¥” reserveCards ÷–“∆≥˝£®»Áπ˚¥Ê‘⁄£©
+    if (baseCard && baseCard != card) {
+        baseCard->areaType = CardAreaType::CAT_RESERVE_STACK;
+        reserveCards.push_back(baseCard);
+    }
     reserveCards.erase(std::remove(reserveCards.begin(), reserveCards.end(), card), reserveCards.end());
-    // ¥” playfield ÷–“≤≥¢ ‘“∆≥˝£®±£œ’£©
+    // ?? playfield ?????????????????
     playfieldCards.erase(std::remove(playfieldCards.begin(), playfieldCards.end(), card), playfieldCards.end());
-    // …Ë÷√µ◊≈∆≤¢∏¸–¬ areaType
+    // ???????????? areaType
     baseCard = card;
     baseCard->areaType = CardAreaType::CAT_BASE_STACK;
 }
@@ -135,16 +141,20 @@ void GameModel::moveCard(CardModel* card, CardAreaType destArea)
 {
     if (!card) return;
 
-    // œ»¥”À˘”–»›∆˜÷–“∆≥˝
+    // ????????????????
     playfieldCards.erase(std::remove(playfieldCards.begin(), playfieldCards.end(), card), playfieldCards.end());
     reserveCards.erase(std::remove(reserveCards.begin(), reserveCards.end(), card), reserveCards.end());
     if (baseCard == card) baseCard = nullptr;
 
-    // ‘Ÿ∏˘æ›ƒø±Í«¯”Ú∑≈»Î∂‘”¶»›∆˜ / ∏¸–¬ baseCard
+    // ????????????????????? / ???? baseCard
     card->areaType = destArea;
     switch (destArea)
     {
     case CardAreaType::CAT_BASE_STACK:
+        if (baseCard && baseCard != card) {
+            baseCard->areaType = CardAreaType::CAT_RESERVE_STACK;
+            reserveCards.push_back(baseCard);
+        }
         baseCard = card;
         break;
     case CardAreaType::CAT_PLAYFIELD:

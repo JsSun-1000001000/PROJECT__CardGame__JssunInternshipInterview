@@ -3,11 +3,12 @@
 #include "cocos2d.h"
 #include "models/GameModel.h"
 #include "CardView.h"
+#include <functional>
 #include <unordered_map>
 
 /**
- * @brief 全局游戏视图容器，负责各区域布局和视图管理
- * @note 遵循MVC设计，不持有业务数据，仅作为视图容器管理者
+ * @brief ??????????????????????????????????
+ * @note ???MVC????????????????????????????????????
  */
 class GameView : public cocos2d::Node
 {
@@ -17,53 +18,58 @@ public:
     bool init() override;
 
     /**
-     * @brief 初始化游戏视图布局
+     * @brief ???????????????
      */
     void initLayout();
 
     /**
-     * @brief 创建卡牌视图并添加到对应区域
-     * @param cardModel 卡牌数据模型
-     * @return 创建的卡牌视图实例
+     * @brief ?????????????????????????
+     * @param cardModel ???????????
+     * @return ???????????????
      */
     CardView* createCardView(CardModel* cardModel);
 
     /**
-     * @brief 移除卡牌视图
-     * @param cardId 要移除的卡牌ID
+     * @brief ??????????
+     * @param cardId ?????????ID
      */
     void removeCardView(int cardId);
 
     /**
-     * @brief 获取卡牌视图
-     * @param cardId 卡牌ID
-     * @return 对应ID的卡牌视图，不存在返回nullptr
+     * @brief ??????????
+     * @param cardId ????ID
+     * @return ???ID???????????????????nullptr
      */
     CardView* getCardView(int cardId);
 
     /**
-     * @brief 刷新所有卡牌视图状态
+     * @brief ???????????????
      */
     void refreshAllCardViews();
 
-    // ---------------- 事件回调 ----------------
-    std::function<void(int cardId)> onCardClicked;  // 卡牌点击事件转发
+    // ---------------- ?????? ----------------
+    std::function<void(int cardId)> onCardClicked;
+    std::function<void()> onUndoClicked;
 
     //-------------------------------------------
     cocos2d::Node* getReserveLayer() const;
+    cocos2d::Vec2 getBaseCardPosition() const;
     void removeReserveCardView(int cardId);
     CardView* updateBaseCardView(CardModel* newBaseCard);
+    void moveCardViewToBaseLayer(int cardId, std::function<void()> onComplete = nullptr);
+    void moveCardViewToReserveLayer(int cardId, std::function<void()> onComplete = nullptr);
+    void moveCardViewToPlayfield(int cardId, const cocos2d::Vec2& position, std::function<void()> onComplete = nullptr);
 
 private:
     /**
-     * @brief 根据卡牌状态添加到对应父节点
+     * @brief ??????????????????????
      */
     void addCardToLayer(CardView* cardView, CardModel* cardModel);
 
-    // ---------------- 成员变量 ----------------
-    cocos2d::Node* _playfieldLayer = nullptr;  // 主牌区层（上层）
-    cocos2d::Node* _baseCardLayer = nullptr;   // 底牌堆层（中层）
-    cocos2d::Node* _reserveLayer = nullptr;    // 备用牌堆层（下层）
-    std::unordered_map<int, CardView*> _cardViewMap;  // 卡牌ID到视图的映射表
+    // ---------------- ??????? ----------------
+    cocos2d::Node* _playfieldLayer = nullptr;  // ???????????
+    cocos2d::Node* _baseCardLayer = nullptr;   // ?????????
+    cocos2d::Node* _reserveLayer = nullptr;    // ???????????
+    std::unordered_map<int, CardView*> _cardViewMap;  // ????ID???????????
 };
 

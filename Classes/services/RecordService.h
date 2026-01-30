@@ -4,49 +4,35 @@
 #include "cocos2d.h"
 #include "models/CardModel.h"
 
-/**
- * RecordService: ¸ºÔğ¼ÇÂ¼ÓÎÏ·²Ù×÷ÈÕÖ¾¡£
- * - ÊµÏÖÎªµ¥Àı£¬ÓÃÓÚ¼ÇÂ¼Íæ¼Ò²Ù×÷ÀúÊ·¡£
- */
+struct UndoEntry {
+    int movedCardId;
+    int oldBaseId;
+    bool fromPlayfield;
+    cocos2d::Vec2 oldPosition;
+};
+
 class RecordService
 {
 public:
-    /**
-     * »ñÈ¡µ¥ÀıÊµÀı¡£
-     * @return RecordService* µ¥ÀıÊµÀı¡£
-     */
     static RecordService* getInstance();
-
-    /**
-     * Ïú»Ùµ¥ÀıÊµÀı¡£
-     */
     static void destroyInstance();
 
-    /**
-     * Ìí¼ÓÍæ¼Ò²Ù×÷¼ÇÂ¼¡£
-     * @param cardId ²Ù×÷µÄ¿¨ÅÆID¡£
-     * @param areaType ¿¨ÅÆËùÊôµÄÇøÓòÀàĞÍ¡£
-     */
     void addOperation(int cardId, CardAreaType areaType);
+    void addUndoRecord(int movedCardId, int oldBaseId, bool fromPlayfield, const cocos2d::Vec2& oldPos);
+    bool canUndo() const { return !_undoStack.empty(); }
+    UndoEntry popUndoRecord();
 
-    /**
-     * »ñÈ¡ËùÓĞ²Ù×÷¼ÇÂ¼¡£
-     * @return std::vector<std::string> °üº¬ÈÕÖ¾µÄÁĞ±í¡£
-     */
     std::vector<std::string> getOperationRecords() const;
-
-    /**
-     * Çå¿Õ²Ù×÷¼ÇÂ¼¡£
-     */
     void clearRecords();
 
 private:
-    RecordService();  // Ë½ÓĞ¹¹Ôìº¯Êı£¬½ûÖ¹Íâ²¿ÊµÀı»¯¡£
+    RecordService();  // ??????????????????????
     ~RecordService() = default;
 
     RecordService(const RecordService&) = delete;
     RecordService& operator=(const RecordService&) = delete;
 
     static RecordService* _instance;
-    std::vector<std::string> _records; // ²Ù×÷¼ÇÂ¼ÁĞ±í¡£
+    std::vector<std::string> _records;
+    std::vector<UndoEntry> _undoStack; // ??????¼?????
 };

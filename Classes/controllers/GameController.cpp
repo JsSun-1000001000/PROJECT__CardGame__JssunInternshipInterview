@@ -1,5 +1,6 @@
 #include "GameController.h"
 #include "services/RecordService.h"
+#include "models/CardModel.h"
 
 GameController* GameController::create(GameModel* model, GameView* view)
 {
@@ -13,26 +14,39 @@ GameController* GameController::create(GameModel* model, GameView* view)
     return nullptr;
 }
 
+GameController::~GameController()
+{
+    if (_gameModel) {
+        _gameModel->release();
+        _gameModel = nullptr;
+    }
+}
+
 bool GameController::init(GameModel* model, GameView* view)
 {
     if (!Node::init()) return false;
 
     _gameModel = model;
+    if (_gameModel) _gameModel->retain();
     _gameView = view;
     _isPaused = false;
     _isGameOver = false;
 
-    // 初始化服务层
+    // ??????????
     _matchingService = MatchingService::getInstance();
 
-    // 初始化子控制器
+    // ?? GameView ??????z=0??????? GameView ?
+    this->addChild(_gameView, 0);
+
+    // ???????
     _playFieldController = PlayFieldController::create(model, view);
     _stackController = StackController::create(model, view);
-    this->addChild(_playFieldController);
-    this->addChild(_stackController);
+    this->addChild(_playFieldController, 1);
+    this->addChild(_stackController, 1);
 
-    // 绑定全局点击事件
-    _gameView->onCardClicked = CC_CALLBACK_1(GameController::onCardClicked, this);
+    // 缁戝畾鍥炶皟
+    _gameView->onCardClicked = [this](int cardId) { this->onCardClicked(cardId); };
+    _gameView->onUndoClicked = [this]() { this->onUndoClicked(); };
 
     return true;
 }
@@ -41,6 +55,7 @@ void GameController::startGame()
 {
     CCLOG("Game started");
     _isGameOver = false;
+    RecordService::getInstance()->clearRecords();
     _matchingService->updateCurrentBaseCard(_gameModel->getBaseCard());
     _playFieldController->initPlayField();
     _stackController->initStacks();
@@ -64,14 +79,14 @@ void GameController::endGame()
 {
     _isGameOver = true;
     CCLOG("Game ended");
-    // 可以在这里添加游戏结束逻辑，比如显示结算界面
+    // ????????????????????????????????????????
 }
 
 void GameController::onCardClicked(int cardId)
 {
     if (isGamePaused() || isGameOver()) return;
 
-    // 检查卡牌归属并分发到对应控制器处理
+    // ????????????????????????????
     auto cardModel = _gameModel->getCardById(cardId);
     if (!cardModel) return;
 
@@ -95,14 +110,14 @@ void GameController::onMatchSuccess(CardModel* movedCard)
 {
     if (!movedCard) return;
 
-    // 更新游戏状态
+    // ?????????
     _gameModel->moveCard(movedCard, CardAreaType::CAT_BASE_STACK);
     _matchingService->updateCurrentBaseCard(movedCard);
 
-    // 记录操作（可选）
+    // ??????????????
     RecordService::getInstance()->addOperation(movedCard->cardId, movedCard->areaType);
 
-    // 检查游戏是否完成
+    // ????????????
     checkGameCompletion();
 }
 
@@ -110,7 +125,7 @@ void GameController::onMatchFailed(CardModel* movedCard)
 {
     if (!movedCard) return;
     CCLOG("Card %d match failed", movedCard->cardId);
-    // 可以添加失败反馈，比如卡牌震动动画
+    // ????????????????????????????
     auto cardView = _gameView->getCardView(movedCard->cardId);
     if (cardView)
     {
@@ -128,11 +143,49 @@ bool GameController::isGameOver() const
     return _isGameOver;
 }
 
+void GameController::checkAndNotifyGameCompletion()
+{
+    checkGameCompletion();
+}
+
 void GameController::checkGameCompletion()
 {
     if (_playFieldController->getPlayFieldCardCount() == 0)
     {
         endGame();
         CCLOG("Game completed! All cards matched.");
+    }
+}
+
+void GameController::onUndoClicked()
+{
+    if (!RecordService::getInstance()->canUndo()) return;
+    UndoEntry entry = RecordService::getInstance()->popUndoRecord();
+    if (entry.movedCardId < 0) return;
+
+    CardModel* movedCard = _gameModel->getCardById(entry.movedCardId);
+    if (!movedCard) return;
+
+    CardModel* oldBaseCard = (entry.oldBaseId >= 0) ? _gameModel->getCardById(entry.oldBaseId) : nullptr;
+    CardModel* currentBase = _gameModel->getBaseCard();
+    if (currentBase != movedCard) return;
+
+    if (entry.fromPlayfield) {
+        _gameModel->baseCard = nullptr;
+        movedCard->areaType = CardAreaType::CAT_PLAYFIELD;
+        movedCard->position = entry.oldPosition;
+        _gameModel->playfieldCards.push_back(movedCard);
+        if (oldBaseCard) _gameModel->setBaseCard(oldBaseCard);
+        _matchingService->updateCurrentBaseCard(_gameModel->getBaseCard());
+        _gameView->moveCardViewToPlayfield(entry.movedCardId, entry.oldPosition, nullptr);
+        if (entry.oldBaseId >= 0) _gameView->moveCardViewToBaseLayer(entry.oldBaseId, nullptr);
+    } else {
+        _gameModel->baseCard = nullptr;
+        movedCard->areaType = CardAreaType::CAT_RESERVE_STACK;
+        _gameModel->reserveCards.push_back(movedCard);
+        if (oldBaseCard) _gameModel->setBaseCard(oldBaseCard);
+        _matchingService->updateCurrentBaseCard(_gameModel->getBaseCard());
+        _gameView->moveCardViewToReserveLayer(entry.movedCardId, nullptr);
+        if (entry.oldBaseId >= 0) _gameView->moveCardViewToBaseLayer(entry.oldBaseId, nullptr);
     }
 }

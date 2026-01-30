@@ -104,8 +104,10 @@ bool HelloWorld::init()
     }
     auto gameController = GameController::create(gameModel, gameView);
     if (gameController) {
+        gameController->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+        gameController->setPosition(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2);
         gameController->startGame();
-        this->addChild(gameController);
+        this->addChild(gameController, 0);
     }
     return true;
 

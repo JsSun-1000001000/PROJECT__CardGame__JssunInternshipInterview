@@ -33,8 +33,9 @@ bool CardView::init(CardModel* cardModel)
 
     this->addChild(_frontSprite);
     this->addChild(_backSprite);
+    this->setContentSize(_frontSprite->getContentSize());
 
-    // 设置初始位置和状态
+    // ?????????
     this->setPosition(_cardModel->position);
     updateView(true);
 

@@ -9,17 +9,20 @@ GameModel* GameModelFromLevelGenerator::generateGameModel(const LevelConfig* lev
     gameModel->currentLevelId = levelId;
     int cardId = 0;
 
-    // ???????????????
+    // ????????retain ?? autorelease ??
     for (const auto& cardConfig : levelConfig->playfieldCards)
     {
         auto cardModel = createCardModelFromConfig(cardConfig, cardId++);
-        cardModel->state = CardModel::State::COVERED;
+        cardModel->retain();
+        cardModel->state = CardModel::State::FLIPPED;
+        cardModel->isRevealed = true;
         cardModel->areaType = CardAreaType::CAT_PLAYFIELD;
         gameModel->playfieldCards.push_back(cardModel);
     }
 
     // ????????????
     auto baseModel = createCardModelFromConfig(levelConfig->baseCard, cardId++);
+    baseModel->retain();
     baseModel->state = CardModel::State::FLIPPED;
     baseModel->areaType = CardAreaType::CAT_BASE_STACK;
     gameModel->baseCard = baseModel;
@@ -28,7 +31,9 @@ GameModel* GameModelFromLevelGenerator::generateGameModel(const LevelConfig* lev
     for (const auto& cardConfig : levelConfig->reserveCards)
     {
         auto cardModel = createCardModelFromConfig(cardConfig, cardId++);
-        cardModel->state = CardModel::State::COVERED;
+        cardModel->retain();
+        cardModel->state = CardModel::State::FLIPPED;
+        cardModel->isRevealed = true;
         cardModel->areaType = CardAreaType::CAT_RESERVE_STACK;
         gameModel->reserveCards.push_back(cardModel);
     }

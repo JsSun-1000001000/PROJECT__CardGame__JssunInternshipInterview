@@ -1,5 +1,6 @@
 #include "StackController.h"
 #include "GameController.h"
+#include "services/RecordService.h"
 
 StackController* StackController::create(GameModel* model, GameView* view)
 {
@@ -26,7 +27,7 @@ bool StackController::init(GameModel* model, GameView* view)
 
 void StackController::initStacks()
 {
-    // 初始化底牌堆
+    // ??????????
     auto baseCard = _gameModel->getBaseCard();
     if (baseCard && _gameView->getCardView(baseCard->cardId) == nullptr)
     {
@@ -34,7 +35,7 @@ void StackController::initStacks()
         updateBaseCardView();
     }
 
-    // 初始化备用牌堆
+    // ????????????
     auto reserveCards = _gameModel->getReserveCards();
     for (auto cardModel : reserveCards)
     {
@@ -49,7 +50,7 @@ void StackController::initStacks()
 
 void StackController::handleBaseCardClick(int cardId)
 {
-    // 底牌堆通常不可点击，除非有特殊玩法需求
+    // ????????????????????????????????
     CCLOG("Base card clicked, but not playable in current mode");
 }
 
@@ -58,26 +59,20 @@ void StackController::handleReserveCardClick(int cardId)
     auto cardModel = _gameModel->getCardById(cardId);
     if (!cardModel) return;
 
-    // 检查是否匹配当前底牌
-    if (_matchingService->isCardMatchable(cardModel))
-    {
-        // 匹配成功，切换底牌
-        _gameModel->setBaseCard(cardModel);
-        updateBaseCardView();
+    // ??1???????? - ???????????????
+    auto oldBase = _gameModel->getBaseCard();
+    _gameModel->setBaseCard(cardModel);
+    _matchingService->updateCurrentBaseCard(cardModel);
 
-        // 从备用牌堆移除卡牌
-        _gameView->removeCardView(cardId);
-        CCLOG("Reserve card %d matched and moved to base", cardId);
+    // ????????
+    if (oldBase && oldBase->cardId != cardId) {
+        _gameView->moveCardViewToReserveLayer(oldBase->cardId, nullptr);
     }
-    else
-    {
-        // 匹配失败，反馈给用户
-        auto gameController = dynamic_cast<GameController*>(this->getParent());
-        if (gameController)
-        {
-            gameController->onMatchFailed(cardModel);
-        }
-    }
+    // ????????
+    _gameView->moveCardViewToBaseLayer(cardId, [=]() {
+        updateBaseCardView();
+    });
+    RecordService::getInstance()->addUndoRecord(cardId, oldBase ? oldBase->cardId : -1, false, cocos2d::Vec2::ZERO);
 }
 
 void StackController::updateBaseCardView()
@@ -88,7 +83,7 @@ void StackController::updateBaseCardView()
     auto baseCardView = _gameView->getCardView(baseCard->cardId);
     if (baseCardView)
     {
-        // 执行底牌切换动画
+        // ?????????????
         baseCardView->runAction(cocos2d::Sequence::create(
             cocos2d::ScaleTo::create(0.1f, 1.2f),
             cocos2d::ScaleTo::create(0.1f, 1.0f),
@@ -99,6 +94,6 @@ void StackController::updateBaseCardView()
 
 void StackController::shuffleReserveCards()
 {
-    // 可以在这里实现备用牌堆洗牌逻辑
+    // ?????????????????????????
     CCLOG("Reserve cards shuffled");
 }

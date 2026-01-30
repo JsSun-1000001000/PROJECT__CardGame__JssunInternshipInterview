@@ -1,5 +1,6 @@
 #include "PlayFieldController.h"
 #include "GameController.h"
+#include "services/RecordService.h"
 
 PlayFieldController* PlayFieldController::create(GameModel* model, GameView* view)
 {
@@ -26,7 +27,7 @@ bool PlayFieldController::init(GameModel* model, GameView* view)
 
 void PlayFieldController::initPlayField()
 {
-    // 从游戏模型加载主牌区卡牌
+    // ?????????????????????
     auto playfieldCards = _gameModel->getPlayfieldCards();
     for (auto cardModel : playfieldCards)
     {
@@ -46,23 +47,29 @@ void PlayFieldController::handleCardClick(int cardId)
         return;
     }
 
-    // 检查是否匹配当前底牌
+    // ??2????????????????1?
     if (_matchingService->isCardMatchable(cardModel))
     {
-        // 匹配成功，通知主控制器处理
-        auto gameController = dynamic_cast<GameController*>(this->getParent());
-        if (gameController)
-        {
-            gameController->onMatchSuccess(cardModel);
-        }
+        auto baseCard = _gameModel->getBaseCard();
+        auto oldBaseId = baseCard ? baseCard->cardId : -1;
+        _gameModel->moveCard(cardModel, CardAreaType::CAT_BASE_STACK);
+        _matchingService->updateCurrentBaseCard(cardModel);
 
-        // 从主牌区移除卡牌
-        _gameView->removeCardView(cardId);
-        revealUnderlyingCards(cardModel);
+        // ????????
+        if (oldBaseId >= 0) {
+            _gameView->moveCardViewToReserveLayer(oldBaseId, nullptr);
+        }
+        cocos2d::Vec2 oldPos = cardModel->position;
+        _gameView->moveCardViewToBaseLayer(cardId, [=]() {
+            revealUnderlyingCards(cardModel);
+            auto gameController = dynamic_cast<GameController*>(this->getParent());
+            if (gameController) gameController->checkAndNotifyGameCompletion();
+        });
+        RecordService::getInstance()->addUndoRecord(cardId, oldBaseId, true, oldPos);
     }
     else
     {
-        // 匹配失败，通知主控制器处理
+        // ?????????????????????
         auto gameController = dynamic_cast<GameController*>(this->getParent());
         if (gameController)
         {
@@ -84,13 +91,13 @@ bool PlayFieldController::isCardPlayable(int cardId)
         return false;
     }
 
-    // 检查卡牌是否被上层卡牌覆盖
+    // ????????????????
     return cardModel->isRevealed;
 }
 
 void PlayFieldController::revealUnderlyingCards(CardModel* removedCard)
 {
-    // 检查是否有下层卡牌被当前移除的卡牌覆盖
+    // ????????????????????????????
     auto playfieldCards = _gameModel->getPlayfieldCards();
     for (auto cardModel : playfieldCards)
     {
@@ -100,7 +107,7 @@ void PlayFieldController::revealUnderlyingCards(CardModel* removedCard)
             auto cardView = _gameView->getCardView(cardModel->cardId);
             if (cardView)
             {
-                cardView->playFlipAnimation(); // 执行翻转动画
+                cardView->playFlipAnimation(); // ?????????
             }
         }
     }

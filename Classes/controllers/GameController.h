@@ -12,6 +12,7 @@ class GameController : public cocos2d::Node
 public:
     static GameController* create(GameModel* model, GameView* view);
     virtual bool init(GameModel* model, GameView* view);
+    virtual ~GameController();
 
     // 游戏生命周期
     void startGame();  // 开始游戏
@@ -21,8 +22,10 @@ public:
 
     // 全局事件回调
     void onCardClicked(int cardId); // 响应卡牌点击事件
-    void onMatchSuccess(CardModel* movedCard); // 匹配成功回调
-    void onMatchFailed(CardModel* movedCard);  // 匹配失败回调
+    void onMatchSuccess(CardModel* movedCard);
+    void checkAndNotifyGameCompletion();
+    void onMatchFailed(CardModel* movedCard);
+    void onUndoClicked();
 
 private:
     // 内部状态检查
