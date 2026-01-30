@@ -24,6 +24,7 @@
 
 #include "HelloWorldScene.h"
 #include "SimpleAudioEngine.h"
+#include "controllers/GameController.h"
 
 USING_NS_CC;
 
@@ -82,6 +83,13 @@ bool HelloWorld::init()
 
     /////////////////////////////
     // 3. add your codes below...
+
+    auto gameController = GameController::create();
+    if (gameController) {
+        gameController->startGame(1);
+        this->addChild(gameController);
+    }
+    return true;
 
     // add a label shows "Hello World"
     // create and initialize a label
