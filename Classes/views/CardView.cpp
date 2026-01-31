@@ -1,207 +1,117 @@
 #include "CardView.h"
-// views/CardView.cpp
-#include "utils/CardTextureUtils.h"  // 工具类，用于加载卡牌纹理
+#include <iostream>
 
-CardView* CardView::create(CardModel* cardModel)
-{
-    auto view = new (std::nothrow) CardView();
-    if (view && view->init(cardModel))
-    {
-        view->autorelease();
+CardView* CardView::create(const CardModel& model, const Vec2& offset) {
+    auto view = new CardView();
+    if (view && view->init(model, offset)) {
+        view->autorelease(); // 交给内存管理池自动释放
         return view;
     }
     CC_SAFE_DELETE(view);
     return nullptr;
 }
 
-bool CardView::init(CardModel* cardModel)
-{
-    _cardModel = cardModel;
-    if (!_cardModel) return false;
 
-    // 初始化容器
-    if (!Sprite::init()) return false;
-
-    // 创建卡牌正反面精灵
-    _frontSprite = CardTextureUtils::createCardFrontSprite(_cardModel);
-    _backSprite = CardTextureUtils::createCardBackSprite();
-
-    if (!_frontSprite || !_backSprite) return false;
-
-    _frontSprite->setAnchorPoint(cocos2d::Vec2::ANCHOR_MIDDLE);
-    _backSprite->setAnchorPoint(cocos2d::Vec2::ANCHOR_MIDDLE);
-
-    this->addChild(_frontSprite);
-    this->addChild(_backSprite);
-    this->setContentSize(_frontSprite->getContentSize());
-
-    // ?????????
-    this->setPosition(_cardModel->position);
-    updateView(true);
-
-    // 注册点击事件
-    auto listener = cocos2d::EventListenerTouchOneByOne::create();
-    listener->onTouchBegan = CC_CALLBACK_2(CardView::onTouchBegan, this);
-    listener->setSwallowTouches(true);
-    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
-
-    return true;
-}
-
-void CardView::updateView(bool force)
-{
-    if (!_cardModel) return;
-
-    // 状态未变化且不强制刷新时跳过
-    if (!force && _cardModel->state == _lastState) return;
-
-    _lastState = _cardModel->state;
-
-    switch (_cardModel->state)
-    {
-    case CardModel::State::COVERED:
-        _frontSprite->setVisible(false);
-        _backSprite->setVisible(true);
-        setClickable(true);
-        break;
-    case CardModel::State::FLIPPED:
-        _frontSprite->setVisible(true);
-        _backSprite->setVisible(false);
-        setClickable(true);
-        break;
-    case CardModel::State::ELIMINATED:
-        _frontSprite->setVisible(false);
-        _backSprite->setVisible(false);
-        setClickable(false);
-        break;
-    default:
-        break;
-    }
-
-    // 更新位置
-    if (this->getPosition() != _cardModel->position)
-    {
-        this->setPosition(_cardModel->position);
-    }
-}
-
-void CardView::playFlipAnimation(std::function<void()> callback)
-{
-    if (_isAnimating) return;
-    _isAnimating = true;
-
-    // 缩放X轴实现翻转动画
-    auto scaleToBack = cocos2d::ScaleTo::create(0.2f, 0, 1);
-    auto scaleToFront = cocos2d::ScaleTo::create(0.2f, 1, 1);
-
-    auto callAfterFlip = cocos2d::CallFunc::create([=]() {
-        updateView(true);  // 切换纹理
+void CardView::setClickCallback(const ClickCallback& callback) {
+    _clickCallback = callback;
+    _cardManager->setCardClickedCallback([this, callback](CardModel& model) {
+        if (callback) {
+            callback(this);
+        }
         });
-
-    auto callAfterAnimation = cocos2d::CallFunc::create([=]() {
-        _isAnimating = false;
-        if (callback) callback();
-        });
-
-    this->runAction(cocos2d::Sequence::create(
-        scaleToBack,
-        callAfterFlip,
-        scaleToFront,
-        callAfterAnimation,
-        nullptr
-    ));
 }
 
-void CardView::playEliminateAnimation(std::function<void()> callback)
-{
-    if (_isAnimating) return;
-    _isAnimating = true;
+bool CardView::isTouchInside(const Vec2& touchPos) {
+    if (!_background) return false;
 
-    auto fadeOut = cocos2d::FadeOut::create(0.3f);
-    auto scaleOut = cocos2d::ScaleTo::create(0.3f, 0);
-    auto spawn = cocos2d::Spawn::create(fadeOut, scaleOut, nullptr);
-
-    auto callAfterAnimation = cocos2d::CallFunc::create([=]() {
-        _isAnimating = false;
-        updateView(true);  // 同步消除状态
-        if (callback) callback();
-        });
-
-    this->runAction(cocos2d::Sequence::create(spawn, callAfterAnimation, nullptr));
+    return _background->getBoundingBox().containsPoint(touchPos);
 }
 
-void CardView::moveToPosition(const cocos2d::Vec2& targetPos, float duration, std::function<void()> callback)
-{
-    if (_isAnimating) return;
-    _isAnimating = true;
-
-    auto moveTo = cocos2d::MoveTo::create(duration, targetPos);
-    auto callAfterAnimation = cocos2d::CallFunc::create([=]() {
-        _isAnimating = false;
-        if (callback) callback();
-        });
-
-    this->runAction(cocos2d::Sequence::create(moveTo, callAfterAnimation, nullptr));
-}
-
-void CardView::updateTexture()
-{
-    if (!_cardModel) return;
-
-    // 刷新正面纹理
-    auto newFrontSprite = CardTextureUtils::createCardFrontSprite(_cardModel);
-    if (newFrontSprite)
-    {
-        _frontSprite->setTexture(newFrontSprite->getTexture());
-        newFrontSprite->release();
-    }
-
-    // 位置同步
-    this->setPosition(_cardModel->position);
-}
-
-void CardView::setClickable(bool enable)
-{
-    this->setOpacity(enable ? 255 : 150);
-}
-
-bool CardView::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
-{
-    if (!isVisible() || !_cardModel || _cardModel->state == CardModel::State::ELIMINATED)
-    {
+bool CardView::init(const CardModel& model, const Vec2& offset) {
+    if (!Node::init()) {
         return false;
     }
 
-    auto touchPos = this->convertTouchToNodeSpace(touch);
-    auto rect = cocos2d::Rect(-this->getContentSize().width / 2, -this->getContentSize().height / 2,
-        this->getContentSize().width, this->getContentSize().height);
-
-    if (rect.containsPoint(touchPos))
-    {
-        if (onCardClicked)
-        {
-            onCardClicked(_cardModel->cardId);
-        }
-        return true;
+    // 1. 加载背景（必须优先加载，确定卡牌尺寸）
+    loadBackground();
+    if (!_background) {
+        CCLOG("CardView: background load failed");
+        return false;
     }
-    return false;
+    // 创建 CardManager 实例
+    _cardManager = new CardManager(model);
+    // 2. 加载子元素
+    loadSmallNumber(model);
+    loadBigNumber(model);
+    loadSuitIcon(model);
+    this->setPosition(model.getPosition() + offset);
+
+    // 设置卡片和视图到 CardManager
+    _cardManager->setCard(model, this);
+    return true;
 }
 
 
-void CardView::playFailedAnimation()
-{
-    if (_isAnimating) return;
-    _isAnimating = true;
+void CardView::loadBackground() {
+    // 假设背景图资源名为 "card_bg.png"，需确保资源存在
+    _background = Sprite::create(CardResConfig::getBackGround());
+    if (_background) {
+        _background->setAnchorPoint(Vec2::ANCHOR_MIDDLE); // 背景锚点设为中心
+        this->addChild(_background);
+        // 同步CardView的尺寸与背景图一致
+        this->setContentSize(_background->getContentSize());
+    }
+}
 
-    auto rotateRight = cocos2d::RotateBy::create(0.1f, 10);
-    auto rotateLeft = cocos2d::RotateBy::create(0.1f, -20);
-    auto rotateBack = cocos2d::RotateBy::create(0.1f, 10);
+void CardView::loadSmallNumber(const CardModel& model) {
+    // 1. 获取资源路径
+    auto suit = model.getSuit();
+    auto face = model.getFace();
+    std::string res = CardResConfig::getSmallNumberRes(suit, face);
 
-    auto callAfterAnimation = cocos2d::CallFunc::create([=]() {
-        _isAnimating = false;
-        });
+    // 2. 创建Sprite（资源不存在时返回nullptr，避免崩溃）
+    _smallNumber = Sprite::create(res);
+    if (_smallNumber) {
+        _smallNumber->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT); // 左上角对齐
+        _smallNumber->setPosition(_smallNumberPos);          // 相对背景中心的位置
+        this->addChild(_smallNumber);
+    }
+    else {
+        CCLOG("CardView: 小数字资源缺失: %s", res.c_str());
+    }
+}
 
-    this->runAction(cocos2d::Sequence::create(
-        rotateRight, rotateLeft, rotateBack, callAfterAnimation, nullptr
-    ));
+void CardView::loadBigNumber(const CardModel& model) {
+    // 1. 获取资源路径
+    auto suit = model.getSuit();
+    auto face = model.getFace();
+    std::string res = CardResConfig::getBigNumberRes(suit, face);
+
+    // 2. 创建Sprite
+    _bigNumber = Sprite::create(res);
+    if (_bigNumber) {
+        _bigNumber->setAnchorPoint(Vec2::ANCHOR_MIDDLE); // 中心对齐
+        _bigNumber->setPosition(_bigNumberPos);          // 背景中心位置
+        this->addChild(_bigNumber);
+    }
+    else {
+        CCLOG("CardView: 大数字资源缺失: %s", res.c_str());
+    }
+}
+
+void CardView::loadSuitIcon(const CardModel& model) {
+    // 1. 获取资源路径
+    auto suit = model.getSuit();
+    std::string res = CardResConfig::getSuitRes(suit);
+
+    // 2. 创建Sprite
+    _suitIcon = Sprite::create(res);
+    if (_suitIcon) {
+        _suitIcon->setAnchorPoint(Vec2::ANCHOR_TOP_RIGHT); // 右上角对齐
+        _suitIcon->setPosition(_suitIconPos);              // 相对背景中心的位置
+        this->addChild(_suitIcon);
+    }
+    else {
+        CCLOG("CardView: 花色图标资源缺失: %s", res.c_str());
+    }
 }

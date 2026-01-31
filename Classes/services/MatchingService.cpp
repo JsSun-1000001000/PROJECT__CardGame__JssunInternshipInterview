@@ -23,8 +23,6 @@ MatchingService::MatchingService()
 bool MatchingService::isCardMatchable(CardModel* card) const
 {
     if (!_currentBaseCard || !card) return false;
-
-    // ???????????A?2?K?Q?
     int diff = abs(static_cast<int>(card->faceType) - static_cast<int>(_currentBaseCard->faceType));
     return diff == 1;
 }

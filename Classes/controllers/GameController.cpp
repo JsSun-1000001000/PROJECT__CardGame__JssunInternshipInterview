@@ -1,191 +1,140 @@
 #include "GameController.h"
-#include "services/RecordService.h"
-#include "models/CardModel.h"
+#include <iostream>
+#include "services/CardIdManagerMap.h"
 
-GameController* GameController::create(GameModel* model, GameView* view)
-{
-    auto controller = new (std::nothrow) GameController();
-    if (controller && controller->init(model, view))
-    {
-        controller->autorelease();
-        return controller;
+
+GameController::GameController(GameModel gameModel)
+    : _gameModel(gameModel), _undoManager(gameModel.getUndoModel()) {
+    CCLOG("GameController: undoMode size=%d", _undoManager.getUndoSize());
+}
+
+GameController::~GameController() {}
+
+bool GameController::selectCardFromPlayefieldAndMatch(CardModel& selectedCard) {
+    if (_undoManager.getUndoSize() == 0) {
+        return false;
     }
-    CC_SAFE_DELETE(controller);
-    return nullptr;
-}
-
-GameController::~GameController()
-{
-    if (_gameModel) {
-        _gameModel->release();
-        _gameModel = nullptr;
+    CardModel bottomCard = getBottomCard();
+    CCLOG("GameController: playerfield stack click");
+    if (isCardMatch(selectedCard, bottomCard)) {
+        // 记录当前状态
+        UndoCardState state;
+        state.id = selectedCard._id;
+        state.position = selectedCard.getPosition();
+        state.zone = selectedCard.getZone();
+        _undoManager.recordUndoState(state);
+        handleCardClicked(selectedCard);
+        return true;
     }
+    return false;
 }
 
-bool GameController::init(GameModel* model, GameView* view)
-{
-    if (!Node::init()) return false;
-
-    _gameModel = model;
-    if (_gameModel) _gameModel->retain();
-    _gameView = view;
-    _isPaused = false;
-    _isGameOver = false;
-
-    // ??????????
-    _matchingService = MatchingService::getInstance();
-
-    // ?? GameView ??????z=0??????? GameView ?
-    this->addChild(_gameView, 0);
-
-    // ???????
-    _playFieldController = PlayFieldController::create(model, view);
-    _stackController = StackController::create(model, view);
-    this->addChild(_playFieldController, 1);
-    this->addChild(_stackController, 1);
-
-    // 绑定回调
-    _gameView->onCardClicked = [this](int cardId) { this->onCardClicked(cardId); };
-    _gameView->onUndoClicked = [this]() { this->onUndoClicked(); };
-
-    return true;
+void GameController::clickStackCard(CardModel& card) {
+    UndoCardState state;
+    state.id = card._id;
+    state.position = card.getPosition();
+    state.zone = card.getZone();
+    _undoManager.recordUndoState(state);
+    CardManager* cardManager = getCardManager(card);
+    CCLOG("GameController: stack click");
+    handleCardClicked(card);
 }
 
-void GameController::startGame()
-{
-    CCLOG("Game started");
-    _isGameOver = false;
-    RecordService::getInstance()->clearRecords();
-    _matchingService->updateCurrentBaseCard(_gameModel->getBaseCard());
-    _playFieldController->initPlayField();
-    _stackController->initStacks();
-}
-
-void GameController::pauseGame()
-{
-    if (_isGameOver) return;
-    _isPaused = true;
-    CCLOG("Game paused");
-}
-
-void GameController::resumeGame()
-{
-    if (_isGameOver) return;
-    _isPaused = false;
-    CCLOG("Game resumed");
-}
-
-void GameController::endGame()
-{
-    _isGameOver = true;
-    CCLOG("Game ended");
-    // ????????????????????????????????????????
-}
-
-void GameController::onCardClicked(int cardId)
-{
-    if (isGamePaused() || isGameOver()) return;
-
-    // ????????????????????????????
-    auto cardModel = _gameModel->getCardById(cardId);
-    if (!cardModel) return;
-
-    switch (cardModel->areaType)
-    {
-    case CardAreaType::CAT_PLAYFIELD:
-        _playFieldController->handleCardClick(cardId);
-        break;
-    case CardAreaType::CAT_BASE_STACK:
-        _stackController->handleBaseCardClick(cardId);
-        break;
-    case CardAreaType::CAT_RESERVE_STACK:
-        _stackController->handleReserveCardClick(cardId);
-        break;
-    default:
-        CCLOG("Unknown card area type");
+bool GameController::undo() {
+    UndoCardState state;
+    if (_undoManager.undo(state)) {
+        moveCardToOriginalPosition(state);
+        return true;
     }
+    return false;
 }
 
-void GameController::onMatchSuccess(CardModel* movedCard)
-{
-    if (!movedCard) return;
-
-    // ?????????
-    _gameModel->moveCard(movedCard, CardAreaType::CAT_BASE_STACK);
-    _matchingService->updateCurrentBaseCard(movedCard);
-
-    // ??????????????
-    RecordService::getInstance()->addOperation(movedCard->cardId, movedCard->areaType);
-
-    // ????????????
-    checkGameCompletion();
+CardModel GameController::getBottomCard() {
+    UndoCardState state;
+    CCLOG("GameController: undoModel size=%d", _undoManager.getUndoSize());
+    if (_undoManager.undo(state)) {
+        _undoManager.recordUndoState(state); // 放回记录
+        auto& playfield = _gameModel.getPlayfield();
+        for (const auto& card : playfield) {
+            if (card._id == state.id) {
+                return card;
+            }
+        }
+        auto& stackfield = _gameModel.getStackfield();
+        for (const auto& card : stackfield) {
+            if (card._id == state.id) {
+                return card;
+            }
+        }
+    }
+    return CardModel(CardFaceType::CFT_ACE, CardSuitType::CST_SPADES, cocos2d::Vec2::ZERO);
 }
 
-void GameController::onMatchFailed(CardModel* movedCard)
-{
-    if (!movedCard) return;
-    CCLOG("Card %d match failed", movedCard->cardId);
-    // ????????????????????????????
-    auto cardView = _gameView->getCardView(movedCard->cardId);
-    if (cardView)
-    {
-        cardView->playFailedAnimation();
+bool GameController::isCardMatch(const CardModel& card1, const CardModel& card2) {
+    int face1 = static_cast<int>(card1.getFace());
+    int face2 = static_cast<int>(card2.getFace());
+    return (face1 == face2 + 1) || (face1 == face2 - 1);
+}
+
+void GameController::moveCardToOriginalPosition(const UndoCardState& state) {
+    auto& playfield = _gameModel.getPlayfield();
+    auto& stackfield = _gameModel.getStackfield();
+    for (auto card : playfield) {
+        if (card._id == state.id) {
+            CardManager* cardManager = getCardManager(card);
+            if (cardManager) {
+                auto moveTo = cocos2d::MoveTo::create(0.5f, state.position);
+                cardManager->getView()->runAction(moveTo);
+                card.setPosition(state.position);
+                card.setZone(state.zone);
+                cardManager->getView()->setZOrder(0);
+            }
+            return;
+        }
+    }
+    for (auto card : stackfield) {
+        if (card._id == state.id) {
+            CardManager* cardManager = getCardManager(card);
+            if (cardManager) {
+                auto moveTo = cocos2d::MoveTo::create(0.5f, state.position);
+                cardManager->getView()->runAction(moveTo);
+                card.setPosition(state.position);
+                card.setZone(state.zone);
+                cardManager->getView()->setZOrder(0);
+            }
+            return;
+        }
     }
 }
 
-bool GameController::isGamePaused() const
-{
-    return _isPaused;
+CardManager* GameController::getCardManager(const CardModel& card) {
+    CardManager* manager = CardIdManagerMap::getInstance().getCardManager(card._id);
+    return manager;
 }
 
-bool GameController::isGameOver() const
-{
-    return _isGameOver;
-}
 
-void GameController::checkAndNotifyGameCompletion()
-{
-    checkGameCompletion();
-}
 
-void GameController::checkGameCompletion()
-{
-    if (_playFieldController->getPlayFieldCardCount() == 0)
-    {
-        endGame();
-        CCLOG("Game completed! All cards matched.");
+void GameController::handleCardClicked(CardModel& card) {
+    CCLOG("GameController: card zone=%d", static_cast<int>(card.getZone()));
+    if (card.getZone() != CardZone::Hand) {
+        //CCLOG(u8"卡牌区域为", card.getZone());
+        cocos2d::Vec2 newPos(700, 400);
+        CardManager* cardManager = getCardManager(card);
+        card.setZone(CardZone::Hand);
+        card.setPosition(newPos);
+        if (cardManager) {
+            CCLOG("GameController: move card id=%d", card._id);
+            auto moveTo = cocos2d::MoveTo::create(0.5f, newPos);
+            cardManager->getView()->runAction(moveTo);
+            if (_undoManager.getUndoSize() != 0) {
+                CardModel lastCard = getBottomCard();
+                cardManager->getView()->setLocalZOrder(getCardManager(lastCard)->getView()->getLocalZOrder() + 1);
+            }
+        }
     }
 }
 
-void GameController::onUndoClicked()
-{
-    if (!RecordService::getInstance()->canUndo()) return;
-    UndoEntry entry = RecordService::getInstance()->popUndoRecord();
-    if (entry.movedCardId < 0) return;
-
-    CardModel* movedCard = _gameModel->getCardById(entry.movedCardId);
-    if (!movedCard) return;
-
-    CardModel* oldBaseCard = (entry.oldBaseId >= 0) ? _gameModel->getCardById(entry.oldBaseId) : nullptr;
-    CardModel* currentBase = _gameModel->getBaseCard();
-    if (currentBase != movedCard) return;
-
-    if (entry.fromPlayfield) {
-        _gameModel->baseCard = nullptr;
-        movedCard->areaType = CardAreaType::CAT_PLAYFIELD;
-        movedCard->position = entry.oldPosition;
-        _gameModel->playfieldCards.push_back(movedCard);
-        if (oldBaseCard) _gameModel->setBaseCard(oldBaseCard);
-        _matchingService->updateCurrentBaseCard(_gameModel->getBaseCard());
-        _gameView->moveCardViewToPlayfield(entry.movedCardId, entry.oldPosition, nullptr);
-        if (entry.oldBaseId >= 0) _gameView->moveCardViewToBaseLayer(entry.oldBaseId, nullptr);
-    } else {
-        _gameModel->baseCard = nullptr;
-        movedCard->areaType = CardAreaType::CAT_RESERVE_STACK;
-        _gameModel->reserveCards.push_back(movedCard);
-        if (oldBaseCard) _gameModel->setBaseCard(oldBaseCard);
-        _matchingService->updateCurrentBaseCard(_gameModel->getBaseCard());
-        _gameView->moveCardViewToReserveLayer(entry.movedCardId, nullptr);
-        if (entry.oldBaseId >= 0) _gameView->moveCardViewToBaseLayer(entry.oldBaseId, nullptr);
-    }
+void GameController::handleLabelClick() {
+    // 处理 Label 点击逻辑，这里调用撤销操作
+    undo();
 }

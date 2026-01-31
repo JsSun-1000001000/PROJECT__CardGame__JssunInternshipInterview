@@ -117,6 +117,7 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)\Resources\" /D /E /I /F /Y
     </CustomBuildStep>
     <ClCompile>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdcpp20</LanguageStandard>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -157,17 +158,8 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)\Resources\" /D /E /I /F /Y
     <ClCompile Include="..\Classes\AppDelegate.cpp" />
     <ClCompile Include="..\Classes\configs\loaders\LevelConfigLoader.cpp" />
     <ClCompile Include="..\Classes\controllers\GameController.cpp" />
-    <ClCompile Include="..\Classes\controllers\PlayFieldController.cpp" />
-    <ClCompile Include="..\Classes\controllers\StackController.cpp" />
     <ClCompile Include="..\Classes\HelloWorldScene.cpp" />
-    <ClCompile Include="..\Classes\models\CardModel.cpp" />
-    <ClCompile Include="..\Classes\models\GameModel.cpp" />
-    <ClCompile Include="..\Classes\models\UndoModel.cpp" />
-    <ClCompile Include="..\Classes\services\GameModelFromLevelGenerator.cpp" />
-    <ClCompile Include="..\Classes\services\MatchingService.cpp" />
-    <ClCompile Include="..\Classes\services\RecordService.cpp" />
-    <ClCompile Include="..\Classes\utils\CardTextureUtils.cpp" />
-    <ClCompile Include="..\Classes\utils\CommonUtils.cpp" />
+    <ClCompile Include="..\Classes\managers\CardManager.cpp" />
     <ClCompile Include="..\Classes\views\CardView.cpp" />
     <ClCompile Include="..\Classes\views\GameView.cpp" />
     <ClCompile Include="main.cpp" />
@@ -175,20 +167,17 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)\Resources\" /D /E /I /F /Y
   <ItemGroup>
     <ClInclude Include="..\Classes\AppDelegate.h" />
     <ClInclude Include="..\Classes\configs\loaders\LevelConfigLoader.h" />
+    <ClInclude Include="..\Classes\configs\models\CardResConfig.h" />
     <ClInclude Include="..\Classes\configs\models\LevelConfig.h" />
     <ClInclude Include="..\Classes\controllers\GameController.h" />
-    <ClInclude Include="..\Classes\controllers\PlayFieldController.h" />
-    <ClInclude Include="..\Classes\controllers\StackController.h" />
     <ClInclude Include="..\Classes\HelloWorldScene.h" />
+    <ClInclude Include="..\Classes\managers\CardManager.h" />
+    <ClInclude Include="..\Classes\managers\UndoManager.h" />
     <ClInclude Include="..\Classes\models\CardModel.h" />
     <ClInclude Include="..\Classes\models\GameModel.h" />
     <ClInclude Include="..\Classes\models\UndoModel.h" />
+    <ClInclude Include="..\Classes\services\CardIdManagerMap.h" />
     <ClInclude Include="..\Classes\services\GameModelFromLevelGenerator.h" />
-    <ClInclude Include="..\Classes\services\MatchingService.h" />
-    <ClInclude Include="..\Classes\services\RecordService.h" />
-    <ClInclude Include="..\Classes\utils\CardEnum.h" />
-    <ClInclude Include="..\Classes\utils\CardTextureUtils.h" />
-    <ClInclude Include="..\Classes\utils\CommonUtils.h" />
     <ClInclude Include="..\Classes\views\CardView.h" />
     <ClInclude Include="..\Classes\views\GameView.h" />
     <ClInclude Include="main.h" />

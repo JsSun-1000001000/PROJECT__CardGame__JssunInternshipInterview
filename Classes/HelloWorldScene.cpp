@@ -27,6 +27,13 @@
 #include "views/GameView.h"
 #include "configs/loaders/LevelConfigLoader.h"
 #include "services/GameModelFromLevelGenerator.h"
+#include "views/CardView.h"
+#include "models/GameModel.h"
+#include "SimpleAudioEngine.h"
+
+#include "configs/models/CardResConfig.h"
+
+
 
 USING_NS_CC;
 
@@ -86,63 +93,24 @@ bool HelloWorld::init()
     /////////////////////////////
     // 3. add your codes below...
 
-    const int levelId = 1;
-    auto levelConfig = LevelConfigLoader::loadLevel(levelId);
-    if (!levelConfig) {
-        CCLOG("HelloWorld: Failed to load level %d", levelId);
-        return true;
-    }
-    auto gameModel = GameModelFromLevelGenerator::generateGameModel(levelConfig, levelId);
-    if (!gameModel) {
-        CCLOG("HelloWorld: Failed to create game model");
-        return true;
-    }
-    auto gameView = GameView::create();
-    if (!gameView) {
-        CCLOG("HelloWorld: Failed to create game view");
-        return true;
-    }
-    auto gameController = GameController::create(gameModel, gameView);
-    if (gameController) {
-        gameController->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
-        gameController->setPosition(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2);
-        gameController->startGame();
-        this->addChild(gameController, 0);
-    }
-    return true;
+    // ========== 1. 上半区：棕色背景 ==========
+    float topHeight = visibleSize.height * 2.0f / 3.0f; // 上半区高度占 2/3 屏幕
+    Color4B topColor(165, 42, 42, 255); // 棕色（RGB：165,42,42；alpha：255）
+    auto topLayer = LayerColor::create(topColor, visibleSize.width, topHeight);
+    // 位置：底部对齐下半区顶部（y = 下半区高度 = visibleSize.height - topHeight）
+    topLayer->setPosition(Vec2(0, visibleSize.height - topHeight));
+    addChild(topLayer, 0); // zOrder=0，确保在最底层
 
-    // add a label shows "Hello World"
-    // create and initialize a label
+    // ========== 2. 下半区：紫色背景 ==========
+    float bottomHeight = visibleSize.height - topHeight; // 下半区高度占 1/3 屏幕
+    Color4B bottomColor(128, 0, 128, 255); // 紫色（RGB：128,0,128；alpha：255）
+    auto bottomLayer = LayerColor::create(bottomColor, visibleSize.width, bottomHeight);
+    bottomLayer->setPosition(Vec2(0, 0)); // 位置：左下角对齐
+    addChild(bottomLayer, 0);
 
-    auto label = Label::createWithTTF("??????????", "fonts/Marker Felt.ttf", 24);
-    if (label == nullptr)
-    {
-        problemLoading("'fonts/Marker Felt.ttf'");
-    }
-    else
-    {
-        // position the label on the center of the screen
-        label->setPosition(Vec2(origin.x + visibleSize.width/2,
-                                origin.y + visibleSize.height - label->getContentSize().height));
-
-        // add the label as a child to this layer
-        this->addChild(label, 1);
-    }
-
-    // add "HelloWorld" splash screen"
-    auto sprite = Sprite::create("HelloWorld.png");
-    if (sprite == nullptr)
-    {
-        problemLoading("'HelloWorld.png'");
-    }
-    else
-    {
-        // position the sprite on the center of the screen
-        sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
-
-        // add the sprite as a child to this layer
-        this->addChild(sprite, 0);
-    }
+    // 使用 GameModelFromLevelGenerator 生成 GameModel 和 GameView
+    auto gameModel = GameModelFromLevelGenerator::generateGameModel("level_1.json");
+    GameModelFromLevelGenerator::generateGameView(gameModel, this);
     return true;
 }
 
@@ -156,6 +124,8 @@ void HelloWorld::menuCloseCallback(Ref* pSender)
 
     //EventCustom customEndEvent("game_scene_close_event");
     //_eventDispatcher->dispatchEvent(&customEndEvent);
-
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    exit(0);
+#endif
 
 }

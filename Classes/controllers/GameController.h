@@ -1,49 +1,54 @@
 #pragma once
 
-#include "cocos2d.h"
 #include "models/GameModel.h"
-#include "views/GameView.h"
-#include "services/MatchingService.h"
-#include "controllers/PlayFieldController.h"
-#include "controllers/StackController.h"
+#include "managers/UndoManager.h"
+#include "managers/CardManager.h"
+#include <vector>
 
-class GameController : public cocos2d::Node
-{
+class CardManager;
+/**
+ * @brief 游戏控制器类（遵循MVC架构的controllers层规范）
+ * 该类是游戏流程的核心控制器，负责协调GameModel与GameView/CardView的交互，
+ * 1. 处理主牌堆卡牌点击匹配逻辑（selectCardFromPlayefieldAndMatch），验证卡牌是否符合消除规则（）；
+ * 2. 管理Stack区卡牌点击事件，通过UndoManager记录操作状态（）；
+ * 3. 实现回退功能（undo），基于UndoModel记录的状态逆向恢复卡牌位置和状态（）；
+ * 4. 协调视图层更新，如调用CardView动画接口执行卡牌移动（）。
+ *
+ */
+class GameController {
 public:
-    static GameController* create(GameModel* model, GameView* view);
-    virtual bool init(GameModel* model, GameView* view);
-    virtual ~GameController();
+    GameController(GameModel gameModel);
+    ~GameController();
 
-    // 游戏生命周期
-    void startGame();  // 开始游戏
-    void pauseGame();  // 暂停游戏
-    void resumeGame(); // 恢复游戏
-    void endGame();    // 结束游戏
+    // 选择主牌堆中翻开的纸牌，点击主牌堆中的牌和底牌匹配
+    bool selectCardFromPlayefieldAndMatch(CardModel& selectedCard);
 
-    // 全局事件回调
-    void onCardClicked(int cardId); // 响应卡牌点击事件
-    void onMatchSuccess(CardModel* movedCard);
-    void checkAndNotifyGameCompletion();
-    void onMatchFailed(CardModel* movedCard);
-    void onUndoClicked();
+    // 点击Stack区的卡牌，记录其状态到UndoModel中
+    void clickStackCard(CardModel& card);
 
+    // 处理卡片点击事件
+    void handleCardClicked(CardModel& card);
+
+    // 点击回退按钮
+    bool undo();
+
+    void handleLabelClick();
 private:
-    // 内部状态检查
-    bool isGamePaused() const;
-    bool isGameOver() const;
-    void checkGameCompletion(); // 检查游戏是否完成
+    GameModel _gameModel;
+    UndoManager _undoManager;
 
-    // 服务层和子控制器
-    MatchingService* _matchingService;
-    PlayFieldController* _playFieldController;
-    StackController* _stackController;
+    // 获取底牌的CardModel
+    CardModel getBottomCard();
 
-    // MVC核心组件
-    GameModel* _gameModel;
-    GameView* _gameView;
+    // 检查两张牌是否匹配
+    bool isCardMatch(const CardModel& card1, const CardModel& card2);
 
-    // 游戏状态
-    bool _isPaused;
-    bool _isGameOver;
+    // 移动卡牌到原位置
+    void moveCardToOriginalPosition(const UndoCardState& state);
+
+    // 根据CardModel获取CardManager
+    CardManager* getCardManager(const CardModel& card);
+
+
 };
 

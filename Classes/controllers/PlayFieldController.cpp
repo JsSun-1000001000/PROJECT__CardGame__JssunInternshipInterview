@@ -87,11 +87,7 @@ bool PlayFieldController::isCardPlayable(int cardId)
 {
     auto cardModel = _gameModel->getCardById(cardId);
     if (!cardModel || cardModel->state == CardModel::State::ELIMINATED)
-    {
         return false;
-    }
-
-    // ????????????????
     return cardModel->isRevealed;
 }
 

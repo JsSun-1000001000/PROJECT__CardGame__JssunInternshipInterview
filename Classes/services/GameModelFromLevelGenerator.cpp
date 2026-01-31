@@ -9,7 +9,6 @@ GameModel* GameModelFromLevelGenerator::generateGameModel(const LevelConfig* lev
     gameModel->currentLevelId = levelId;
     int cardId = 0;
 
-    // ????????retain ?? autorelease ??
     for (const auto& cardConfig : levelConfig->playfieldCards)
     {
         auto cardModel = createCardModelFromConfig(cardConfig, cardId++);
@@ -38,7 +37,7 @@ GameModel* GameModelFromLevelGenerator::generateGameModel(const LevelConfig* lev
         gameModel->reserveCards.push_back(cardModel);
     }
 
-    // 默认主牌区第一个卡牌为顶部可点击卡牌（可根据关卡配置调整）
+    // ???????????????????????????????????????????????
     if (!gameModel->playfieldCards.empty())
     {
         gameModel->topPlayfieldCardId = gameModel->playfieldCards.front()->cardId;

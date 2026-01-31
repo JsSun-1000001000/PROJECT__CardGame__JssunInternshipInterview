@@ -10,69 +10,90 @@
 #pragma once
 
 #include "cocos2d.h"
-#include "utils/CardEnum.h"
+USING_NS_CC;
+enum class CardZone {
+    Playfield,  // 主牌区
+    Stack,      // 备用牌堆
+    Hand,
+    Unknown     // 兜底值，避免非法状态
+};
 
- // 卡牌在游戏中的区域（控制器中使用的枚举）
-enum class CardAreaType
-{
-    CAT_NONE = -1,
-    CAT_PLAYFIELD,
-    CAT_BASE_STACK,
-    CAT_RESERVE_STACK
+enum class CardSuitType {
+    CST_NONE = -1,
+    CST_CLUBS,      // 梅花
+    CST_DIAMONDS,   // 方块
+    CST_HEARTS,     // 红桃
+    CST_SPADES,     // 黑桃
+    CST_NUM_CARD_SUIT_TYPES
 };
 
 
-class CardModel : public cocos2d::Ref
-{
+enum class CardFaceType {
+    CFT_NONE = -1,
+    CFT_ACE,
+    CFT_TWO,
+    CFT_THREE,
+    CFT_FOUR,
+    CFT_FIVE,
+    CFT_SIX,
+    CFT_SEVEN,
+    CFT_EIGHT,
+    CFT_NINE,
+    CFT_TEN,
+    CFT_JACK,
+    CFT_QUEEN,
+    CFT_KING,
+    CFT_NUM_CARD_FACE_TYPES
+};
+
+/**
+ * @brief 卡牌数据模型类（遵循MVC架构的models层规范）
+ *
+ * @成员变量说明：
+ * - _face：卡牌点数枚举（CardFaceType），取值范围ACE（1）至KING（13），默认值为ACE（）；
+ * - _suit：卡牌花色枚举（CardSuitType），包含梅花、方块、红桃、黑桃四种，默认值为黑桃（）；
+ * - _zone：卡牌所在区域枚举（CardZone），包括主牌区（Playfield）、备用牌堆（Stack）、手牌区（Hand）等，默认值为Unknown；
+ * - _position：卡牌在场景中的坐标（cocos2d::Vec2），默认值为原点（0, 0）；
+ * - _id：卡牌唯一标识符，用于管理器层（managers）和控制器层（controllers）快速定位实例（参考）。
+ *
+ * @构造函数：
+ * - 基础构造函数：初始化点数、花色、位置，适用于默认区域（Unknown）和自动分配ID的场景；
+ * - 全量构造函数：支持显式指定ID和区域，符合"模型层支持序列化"的扩展需求（）。
+ *
+ * @接口设计：
+ * - 提供getter/setter方法访问属性，遵循"类的成员变量私有化"规范（）；
+ * - 属性修改接口（如setZone、setPosition）可直接更新卡牌状态，供控制器层调用（）。
+ */
+class CardModel {
 public:
-
-    /** 卡牌状态枚举 */
-    enum class State
-    {
-        /** 覆盖状态，不可点击 */
-        COVERED,
-        /** 翻开状态，可点击 */
-        FLIPPED,
-        /** 已消除状态，不可见 */
-        ELIMINATED
-    };
-
-    //CREATE_FUNC(CardModel);
-    // 手动实现静态创建函数
-    static CardModel* create();
-    //自定义init
-    bool init() ;
-
-    // 序列化：将对象转为JSON字符串
-    std::string serialize() const;
-    // 反序列化：从JSON字符串恢复对象
-    bool deserialize(const std::string& jsonStr);
-
-    // ---------------- 成员变量 ----------------
-    /** 唯一ID，用于区分不同卡牌 */
-    int cardId = -1;
-    /** 牌面类型 */
-    CardFaceType faceType = CardFaceType::CFT_NONE;
-    /** 花色类型 */
-    CardSuitType suitType = CardSuitType::CST_NONE;
-    /** 当前位置（设计分辨率坐标） */
-    cocos2d::Vec2 position;
-    /** 当前状态 */
-    State state = State::COVERED;
-
-
-    CardAreaType areaType = CardAreaType::CAT_NONE;
-    bool isRevealed = false;
-
-    // 检查当前卡牌是否被指定卡覆盖（简单占位实现）
-    // 实际游戏中应根据布局/坐标/层级实现更精确逻辑
-    bool isCoveredBy(const CardModel* other) const
-    {
-        // 占位：返回 false 表示未被覆盖；可替换为真实逻辑
-        // 例如：基于 position 或一些覆盖关系表判断
-        (void)other;
-        return false;
+    CardModel(CardFaceType face, CardSuitType suit, const cocos2d::Vec2& position) :
+        _face(face)
+        , _suit(suit)
+        , _position(position) {
     }
 
+    CardModel(CardFaceType face, CardSuitType suit, const cocos2d::Vec2& position, int id, CardZone zone) :
+        _face(face)
+        , _suit(suit)
+        , _position(position)
+        , _id(id)
+        , _zone(zone) {
+    }
+
+    CardFaceType getFace() const { return _face; }
+    CardSuitType getSuit() const { return _suit; }
+    const cocos2d::Vec2& getPosition() const { return _position; }
+    const CardZone getZone() const { return _zone; }
+    void setZone(CardZone zone) { _zone = zone; }
+    void setPosition(Vec2 position) { _position = position; }
+    int _id;
+
+private:
+    CardFaceType _face{ CardFaceType::CFT_ACE };
+    CardSuitType _suit{ CardSuitType::CST_SPADES };
+
+    CardZone _zone;
+    cocos2d::Vec2 _position{ cocos2d::Vec2::ZERO };
 };
+
 

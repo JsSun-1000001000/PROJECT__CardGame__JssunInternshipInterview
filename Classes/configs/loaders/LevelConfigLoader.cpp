@@ -1,100 +1,83 @@
 #include "LevelConfigLoader.h"
-#include "cocos2d.h"
-#include "utils/CardEnum.h"
-#include "document.h"
-#include "filereadstream.h"
-#include <cstdio>
 
-USING_NS_CC;
 
-// JSON 中 CardFace: 0-12 对应 CFT_ACE 到 CFT_KING
-static CardFaceType jsonFaceToEnum(int face) {
-    if (face >= 0 && face <= 12) {
-        return static_cast<CardFaceType>(face);
-    }
-    return CardFaceType::CFT_NONE;
-}
+int LevelConfigLoader::currentId = 0;
 
-// JSON 中 CardSuit: 0-3 对应 CST_CLUBS, CST_DIAMONDS, CST_HEARTS, CST_SPADES
-static CardSuitType jsonSuitToEnum(int suit) {
-    if (suit >= 0 && suit <= 3) {
-        return static_cast<CardSuitType>(suit);
-    }
-    return CardSuitType::CST_NONE;
-}
-
-LevelConfig* LevelConfigLoader::loadLevel(int levelId)
-{
-    char pathBuf[256];
-    snprintf(pathBuf, sizeof(pathBuf), "levels/level_%d.json", levelId);
-
-    std::string fullPath = FileUtils::getInstance()->fullPathForFilename(pathBuf);
-    if (fullPath.empty()) {
-        CCLOG("LevelConfigLoader: level file not found: %s", pathBuf);
+LevelConfig* LevelConfigLoader::loadLevelConfig(std::string fileName) {
+    std::string jsonStr = cocos2d::FileUtils::getInstance()->getStringFromFile(fileName);
+    rapidjson::Document d;
+    d.Parse<rapidjson::kParseDefaultFlags>(jsonStr.c_str());
+    if (d.HasParseError()) {
+        rapidjson::ParseErrorCode code = d.GetParseError();
+        CCLOG("LevelConfigLoader: JSON parse error code=%d", static_cast<int>(code));
         return nullptr;
     }
-
-    FILE* fp = fopen(fullPath.c_str(), "rb");
-    if (!fp) {
-        CCLOG("LevelConfigLoader: cannot open file: %s", fullPath.c_str());
-        return nullptr;
+    auto config = new LevelConfig();
+    if (!d.IsObject()) {
+        CCLOG("LevelConfigLoader: Root node is not an object.");
+        return nullptr; // 返回空数据的 config（或根据需求返回 nullptr）
     }
 
-    char readBuf[65536];
-    rapidjson::FileReadStream is(fp, readBuf, sizeof(readBuf));
-    rapidjson::Document doc;
-    doc.ParseStream(is);
-    fclose(fp);
+    // 重置自增 id
+    currentId = 0;
 
-    if (doc.HasParseError()) {
-        CCLOG("LevelConfigLoader: JSON parse error");
-        return nullptr;
-    }
-
-    auto levelConfig = LevelConfig::create();
-    if (!levelConfig) return nullptr;
-
-    // 解析 Playfield 主牌区
-    if (doc.HasMember("Playfield") && doc["Playfield"].IsArray()) {
-        const auto& arr = doc["Playfield"].GetArray();
-        for (rapidjson::SizeType i = 0; i < arr.Size(); ++i) {
-            const auto& item = arr[i];
-            CardConfig cfg;
-            cfg.faceType = jsonFaceToEnum(item.HasMember("CardFace") ? item["CardFace"].GetInt() : 0);
-            cfg.suitType = jsonSuitToEnum(item.HasMember("CardSuit") ? item["CardSuit"].GetInt() : 0);
-            if (item.HasMember("Position") && item["Position"].IsObject()) {
-                cfg.position.x = item["Position"].HasMember("x") ? item["Position"]["x"].GetFloat() : 0;
-                cfg.position.y = item["Position"].HasMember("y") ? item["Position"]["y"].GetFloat() : 0;
-            }
-            levelConfig->playfieldCards.push_back(cfg);
-        }
-    }
-
-    // 解析 Stack 卡堆区：第一张为底牌，其余为备用牌
-    if (doc.HasMember("Stack") && doc["Stack"].IsArray()) {
-        const auto& arr = doc["Stack"].GetArray();
-        for (rapidjson::SizeType i = 0; i < arr.Size(); ++i) {
-            const auto& item = arr[i];
-            CardConfig cfg;
-            cfg.faceType = jsonFaceToEnum(item.HasMember("CardFace") ? item["CardFace"].GetInt() : 0);
-            cfg.suitType = jsonSuitToEnum(item.HasMember("CardSuit") ? item["CardSuit"].GetInt() : 0);
-            if (item.HasMember("Position") && item["Position"].IsObject()) {
-                cfg.position.x = item["Position"].HasMember("x") ? item["Position"]["x"].GetFloat() : 0;
-                cfg.position.y = item["Position"].HasMember("y") ? item["Position"]["y"].GetFloat() : 0;
-            }
-            if (i == 0) {
-                levelConfig->baseCard = cfg;
-            } else {
-                levelConfig->reserveCards.push_back(cfg);
+    // 4. 解析 Playfield 数组
+    if (d.HasMember("Playfield") && d["Playfield"].IsArray()) {
+        const rapidjson::Value& playfieldArray = d["Playfield"];
+        for (SizeType i = 0; i < playfieldArray.Size(); ++i) {
+            const rapidjson::Value& cardNode = playfieldArray[i];
+            if (!parseCardModel(cardNode, config->_playfieldCards, CardZone::Playfield)) {
+                CCLOG("LevelConfigLoader: Invalid Playfield card at index %zu", i);
             }
         }
     }
 
-    // 若 Stack 为空，设置默认底牌（A）以便游戏能启动
-    if (levelConfig->baseCard.faceType == CardFaceType::CFT_NONE) {
-        levelConfig->baseCard.faceType = CardFaceType::CFT_ACE;
-        levelConfig->baseCard.suitType = CardSuitType::CST_CLUBS;
+    // 5. 解析 Stack 数组
+    if (d.HasMember("Stack") && d["Stack"].IsArray()) {
+        const rapidjson::Value& stackArray = d["Stack"];
+        for (SizeType i = 0; i < stackArray.Size(); ++i) {
+            const rapidjson::Value& cardNode = stackArray[i];
+            if (!parseCardModel(cardNode, config->_stackCards, CardZone::Stack)) {
+                CCLOG("LevelConfigLoader: Invalid Stack card at index %zu", i);
+            }
+        }
+    }
+    return config;
+}
+
+bool LevelConfigLoader::parseCardModel(const rapidjson::Value& cardNode, std::vector<CardModel>& target, CardZone zone) {
+    if (!cardNode.IsObject()) return false;
+
+    // 校验必要字段存在且类型正确
+    if (!cardNode.HasMember("CardFace") || !cardNode["CardFace"].IsInt()) return false;
+    if (!cardNode.HasMember("CardSuit") || !cardNode["CardSuit"].IsInt()) return false;
+    if (!cardNode.HasMember("Position") || !cardNode["Position"].IsObject()) return false;
+
+    const rapidjson::Value& posNode = cardNode["Position"];
+    if (!posNode.HasMember("x") || !posNode["x"].IsInt() ||
+        !posNode.HasMember("y") || !posNode["y"].IsInt()) {
+        return false;
     }
 
-    return levelConfig;
+    // 提取原始值
+    int faceInt = cardNode["CardFace"].GetInt();
+    int suitInt = cardNode["CardSuit"].GetInt();
+    float x = posNode["x"].GetFloat();
+    float y = posNode["y"].GetFloat();
+
+    // 校验枚举范围（假设 CardFace: 1~13，CardSuit: 0~3）
+    if (faceInt < 0 || faceInt > 12) return false;
+    if (suitInt < 0 || suitInt > 3) return false;
+
+    // 转换为枚举并构造 CardModel
+    CardFaceType face = static_cast<CardFaceType>(faceInt);
+    CardSuitType suit = static_cast<CardSuitType>(suitInt);
+    cocos2d::Vec2 pos(x, y);
+
+    // 获取当前 id 并递增
+    int id = currentId++;
+    if (zone == CardZone::Stack)  pos += Vec2(300, 400);
+    else pos += Vec2(0, 600);
+    target.emplace_back(face, suit, pos, id, zone); // 直接构造，避免拷贝
+    return true;
 }

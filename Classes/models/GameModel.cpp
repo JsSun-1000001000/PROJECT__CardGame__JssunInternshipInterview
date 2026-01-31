@@ -115,7 +115,6 @@ bool GameModel::deserialize(const std::string& jsonStr)
 
 CardModel* GameModel::getCardById(int id) const
 {
-    // 仅在 baseCard 为有效指针时访问，避免悬空指针（如 0xDDDDDDDD）
     if (baseCard != nullptr && baseCard->cardId == id) return baseCard;
     for (auto c : playfieldCards) if (c && c->cardId == id) return c;
     for (auto c : reserveCards) if (c && c->cardId == id) return c;

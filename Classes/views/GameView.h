@@ -3,73 +3,62 @@
 #include "cocos2d.h"
 #include "models/GameModel.h"
 #include "CardView.h"
-#include <functional>
-#include <unordered_map>
+#include <vector>
+#include "managers/UndoManager.h"
+#include "controllers/GameController.h"
 
+USING_NS_CC;
 /**
- * @brief ??????????????????????????????????
- * @note ???MVC????????????????????????????????????
+ * @brief 游戏主视图类（遵循MVC架构的views层规范）
+ *
+ * @职责：
+ * 1. 基于GameModel数据渲染游戏主界面，包括主牌区（playfield）和备用牌堆（stackfield）；
+ * 2. 管理所有CardView实例的生命周期，根据模型数据动态生成或销毁卡牌视图；
+ * 3. 处理全局触摸事件和UI交互（如状态标签点击），并通过回调通知控制器；
+ * 4. 提供游戏状态的可视化展示（如_statusLabel显示当前游戏状态）。
+ *
+ * @渲染结构：
+ * - _playfieldCardViews：主牌区卡牌视图集合，对应GameModel中的_playfield；
+ * - _stackfieldCardViews：备用牌堆卡牌视图集合，对应GameModel中的_stackfield；
+ * - _statusLabel：游戏状态文本标签，这里是回退标签。
+ *
  */
-class GameView : public cocos2d::Node
-{
+class GameView : public Node {
 public:
-    static GameView* create();
+    /**
+     * @brief 静态创建 GameView 的方法
+     * @param model GameModel 对象，用于初始化 GameView
+     */
+    static GameView* create(GameModel& model);
 
-    bool init() override;
+protected:
+    /**
+     * @brief 初始化 GameView 的逻辑
+     * @param model GameModel 对象，用于初始化 GameView
+     * @return 初始化成功返回 true，否则返回 false
+     */
+    bool init(GameModel& model);
 
     /**
-     * @brief ???????????????
+     * @brief 根据 GameModel 生成对应的 CardView 数组
+     * @param model GameModel 对象，包含卡片信息
      */
-    void initLayout();
-
-    /**
-     * @brief ?????????????????????????
-     * @param cardModel ???????????
-     * @return ???????????????
-     */
-    CardView* createCardView(CardModel* cardModel);
-
-    /**
-     * @brief ??????????
-     * @param cardId ?????????ID
-     */
-    void removeCardView(int cardId);
-
-    /**
-     * @brief ??????????
-     * @param cardId ????ID
-     * @return ???ID???????????????????nullptr
-     */
-    CardView* getCardView(int cardId);
-
-    /**
-     * @brief ???????????????
-     */
-    void refreshAllCardViews();
-
-    // ---------------- ?????? ----------------
-    std::function<void(int cardId)> onCardClicked;
-    std::function<void()> onUndoClicked;
-
-    //-------------------------------------------
-    cocos2d::Node* getReserveLayer() const;
-    cocos2d::Vec2 getBaseCardPosition() const;
-    void removeReserveCardView(int cardId);
-    CardView* updateBaseCardView(CardModel* newBaseCard);
-    void moveCardViewToBaseLayer(int cardId, std::function<void()> onComplete = nullptr);
-    void moveCardViewToReserveLayer(int cardId, std::function<void()> onComplete = nullptr);
-    void moveCardViewToPlayfield(int cardId, const cocos2d::Vec2& position, std::function<void()> onComplete = nullptr);
+    void generateCardViews(GameModel& model);
 
 private:
-    /**
-     * @brief ??????????????????????
-     */
-    void addCardToLayer(CardView* cardView, CardModel* cardModel);
+    std::vector<CardView*> _playfieldCardViews; // 存储 playfield 对应的 CardView 数组
+    std::vector<CardView*> _stackfieldCardViews; // 存储 stackfield 对应的 CardView 数组
 
-    // ---------------- ??????? ----------------
-    cocos2d::Node* _playfieldLayer = nullptr;  // ???????????
-    cocos2d::Node* _baseCardLayer = nullptr;   // ?????????
-    cocos2d::Node* _reserveLayer = nullptr;    // ???????????
-    std::unordered_map<int, CardView*> _cardViewMap;  // ????ID???????????
+    // Label 成员变量
+    cocos2d::Label* _statusLabel;
+
+
+    // GameController 成员变量
+    GameController* _gameController;
+    // 处理 Label 点击的回调函数
+    void onLabelClicked();
+
+    // 注册触摸事件
+    void registerTouchEvents();
 };
 
