@@ -3,8 +3,16 @@
 #include "services/CardIdManagerMap.h"
 
 
-GameController::GameController(GameModel gameModel)
-    : _gameModel(gameModel), _undoManager(gameModel.getUndoModel()) {
+//GameController::GameController(GameModel gameModel)
+//    : _gameModel(gameModel), _undoManager(gameModel.getUndoModel()) {
+//    CCLOG("GameController: undoMode size=%d", _undoManager.getUndoSize());
+//}
+
+GameController::GameController(GameModel gameModel,
+    const cocos2d::Vec2& playfieldOffset,
+    const cocos2d::Vec2& stackOffset)
+    : _gameModel(gameModel), _undoManager(gameModel.getUndoModel())
+    , _playfieldOffset(playfieldOffset), _stackOffset(stackOffset) {
     CCLOG("GameController: undoMode size=%d", _undoManager.getUndoSize());
 }
 
@@ -77,13 +85,16 @@ bool GameController::isCardMatch(const CardModel& card1, const CardModel& card2)
 }
 
 void GameController::moveCardToOriginalPosition(const UndoCardState& state) {
+    cocos2d::Vec2 displayPos = state.position + (state.zone == CardZone::Stack ? _stackOffset : _playfieldOffset);
+    //
     auto& playfield = _gameModel.getPlayfield();
     auto& stackfield = _gameModel.getStackfield();
     for (auto card : playfield) {
         if (card._id == state.id) {
             CardManager* cardManager = getCardManager(card);
             if (cardManager) {
-                auto moveTo = cocos2d::MoveTo::create(0.5f, state.position);
+                //auto moveTo = cocos2d::MoveTo::create(0.5f, state.position);
+                auto moveTo = cocos2d::MoveTo::create(0.5f, displayPos);
                 cardManager->getView()->runAction(moveTo);
                 card.setPosition(state.position);
                 card.setZone(state.zone);
@@ -96,7 +107,8 @@ void GameController::moveCardToOriginalPosition(const UndoCardState& state) {
         if (card._id == state.id) {
             CardManager* cardManager = getCardManager(card);
             if (cardManager) {
-                auto moveTo = cocos2d::MoveTo::create(0.5f, state.position);
+                //auto moveTo = cocos2d::MoveTo::create(0.5f, state.position);
+                auto moveTo = cocos2d::MoveTo::create(0.5f, displayPos);
                 cardManager->getView()->runAction(moveTo);
                 card.setPosition(state.position);
                 card.setZone(state.zone);

@@ -93,17 +93,17 @@ bool HelloWorld::init()
     /////////////////////////////
     // 3. add your codes below...
 
-    // ========== 1. 上半区：棕色背景 ==========
-    float topHeight = visibleSize.height * 2.0f / 3.0f; // 上半区高度占 2/3 屏幕
-    Color4B topColor(165, 42, 42, 255); // 棕色（RGB：165,42,42；alpha：255）
+    // top color light yellow
+    float topHeight = visibleSize.height * 2.0f / 3.0f; 
+    Color4B topColor(255, 255, 0, 255); 
     auto topLayer = LayerColor::create(topColor, visibleSize.width, topHeight);
     // 位置：底部对齐下半区顶部（y = 下半区高度 = visibleSize.height - topHeight）
     topLayer->setPosition(Vec2(0, visibleSize.height - topHeight));
     addChild(topLayer, 0); // zOrder=0，确保在最底层
 
-    // ========== 2. 下半区：紫色背景 ==========
-    float bottomHeight = visibleSize.height - topHeight; // 下半区高度占 1/3 屏幕
-    Color4B bottomColor(128, 0, 128, 255); // 紫色（RGB：128,0,128；alpha：255）
+    // bottom light green
+    float bottomHeight = visibleSize.height - topHeight; 
+    Color4B bottomColor(0, 160, 0, 255); 
     auto bottomLayer = LayerColor::create(bottomColor, visibleSize.width, bottomHeight);
     bottomLayer->setPosition(Vec2(0, 0)); // 位置：左下角对齐
     addChild(bottomLayer, 0);

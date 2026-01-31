@@ -4,6 +4,7 @@
 #include "managers/UndoManager.h"
 #include "managers/CardManager.h"
 #include <vector>
+#include "cocos2d.h"
 
 class CardManager;
 /**
@@ -17,7 +18,10 @@ class CardManager;
  */
 class GameController {
 public:
-    GameController(GameModel gameModel);
+    //GameController(GameModel gameModel);
+    GameController(GameModel gameModel,
+        const cocos2d::Vec2& playfieldOffset = cocos2d::Vec2::ZERO,
+        const cocos2d::Vec2& stackOffset = cocos2d::Vec2::ZERO);
     ~GameController();
 
     // 选择主牌堆中翻开的纸牌，点击主牌堆中的牌和底牌匹配
@@ -49,6 +53,7 @@ private:
     // 根据CardModel获取CardManager
     CardManager* getCardManager(const CardModel& card);
 
-
+    cocos2d::Vec2 _playfieldOffset;
+    cocos2d::Vec2 _stackOffset;
 };
 

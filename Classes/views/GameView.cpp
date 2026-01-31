@@ -1,5 +1,8 @@
 #include "GameView.h"
 
+// 主牌堆与底牌堆独立偏移，便于单独调整位置
+static const cocos2d::Vec2 kPlayfieldOffset(150, 250);  // 主牌堆：往右、往上
+static const cocos2d::Vec2 kStackOffset(0, 0);         // 底牌堆：不动
 
 GameView* GameView::create(GameModel& model) {
     GameView* pRet = new(std::nothrow) GameView();
@@ -16,7 +19,8 @@ bool GameView::init(GameModel& model) {
         return false;
     }
 
-    _gameController = new GameController(model);
+    //_gameController = new GameController(model);
+    _gameController = new GameController(model, kPlayfieldOffset, kStackOffset);
     generateCardViews(model);
     // 1. 创建并添加 Label
     _statusLabel = cocos2d::Label::createWithSystemFont(std::string(reinterpret_cast<const char*>(u8"\u56de\u9000")), "Microsoft YaHei", 36); // 确保路径正确
@@ -35,13 +39,14 @@ bool GameView::init(GameModel& model) {
 
 void GameView::generateCardViews(GameModel& model) {
 
-    const cocos2d::Vec2 kCardStackOffset(150, 250);
+    //const cocos2d::Vec2 kCardStackOffset(150, 250);
 
     // 生成 playfield 对应的 CardView 数组
     const auto& playfield = model.getPlayfield();
     for (auto cardModel : playfield) {
         //CardView* cardView = CardView::create(cardModel, Vec2(0, 0));
-        CardView* cardView = CardView::create(cardModel, kCardStackOffset);
+        //CardView* cardView = CardView::create(cardModel, kCardStackOffset);
+        CardView* cardView = CardView::create(cardModel, kPlayfieldOffset);
         if (cardView) {
             _playfieldCardViews.push_back(cardView);
             this->addChild(cardView);
@@ -52,7 +57,8 @@ void GameView::generateCardViews(GameModel& model) {
     const auto& stackfield = model.getStackfield();
     for (auto cardModel : stackfield) {
         //CardView* cardView = CardView::create(cardModel, Vec2(0, 0));
-        CardView* cardView = CardView::create(cardModel, kCardStackOffset);
+        //CardView* cardView = CardView::create(cardModel, kCardStackOffset);
+        CardView* cardView = CardView::create(cardModel, kStackOffset);
         if (cardView) {
             _stackfieldCardViews.push_back(cardView);
             this->addChild(cardView);
