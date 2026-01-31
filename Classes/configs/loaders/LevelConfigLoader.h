@@ -1,9 +1,7 @@
 /*****************************************************************//**
- * \file   LevelConfigLoader.h
- * \brief  关卡配置加载器，从JSON文件加载关卡数据
- *
- * \author 59641
- * \date   January 2026
+ * @file    LevelConfigLoader.h
+ * @author  59641
+ * @date    January 2026
  *********************************************************************/
 #pragma once
 

@@ -1,3 +1,8 @@
+/*****************************************************************//**
+ * @file    GameController.h
+ * @author  59641
+ * @date    January 2026
+ *********************************************************************/
 #pragma once
 
 #include "models/GameModel.h"
@@ -8,49 +13,89 @@
 
 class CardManager;
 /**
- * @brief ÓÎÏ·¿ØÖÆÆ÷Àà£¨×ñÑ­MVC¼Ü¹¹µÄcontrollers²ã¹æ·¶£©
- * ¸ÃÀàÊÇÓÎÏ·Á÷³ÌµÄºËĞÄ¿ØÖÆÆ÷£¬¸ºÔğĞ­µ÷GameModelÓëGameView/CardViewµÄ½»»¥£¬
- * 1. ´¦ÀíÖ÷ÅÆ¶Ñ¿¨ÅÆµã»÷Æ¥ÅäÂß¼­£¨selectCardFromPlayefieldAndMatch£©£¬ÑéÖ¤¿¨ÅÆÊÇ·ñ·ûºÏÏû³ı¹æÔò£¨£©£»
- * 2. ¹ÜÀíStackÇø¿¨ÅÆµã»÷ÊÂ¼ş£¬Í¨¹ıUndoManager¼ÇÂ¼²Ù×÷×´Ì¬£¨£©£»
- * 3. ÊµÏÖ»ØÍË¹¦ÄÜ£¨undo£©£¬»ùÓÚUndoModel¼ÇÂ¼µÄ×´Ì¬ÄæÏò»Ö¸´¿¨ÅÆÎ»ÖÃºÍ×´Ì¬£¨£©£»
- * 4. Ğ­µ÷ÊÓÍ¼²ã¸üĞÂ£¬Èçµ÷ÓÃCardView¶¯»­½Ó¿ÚÖ´ĞĞ¿¨ÅÆÒÆ¶¯£¨£©¡£
- *
+ * @brief æ¸¸æˆæ§åˆ¶å™¨ç±»ï¼ˆéµå¾ªMVCæ¶æ„çš„controllerså±‚è§„èŒƒï¼‰
+ * è´Ÿè´£æ¸¸æˆé€»è¾‘çš„æ•´ä½“æ§åˆ¶ï¼Œåè°ƒGameModelå’ŒGameView/CardViewçš„äº¤äº’
+ * 1. å¤„ç†å¡ç‰Œç§»åŠ¨å’ŒåŒ¹é…é€»è¾‘ï¼Œå¦‚selectCardFromPlayefieldAndMatchæ–¹æ³•ï¼ŒéªŒè¯å¡ç‰Œæ˜¯å¦å¯ä»¥ç§»åŠ¨
+ * 2. å¤„ç†Stackå¡ç‰Œçš„ç‚¹å‡»ï¼Œé€šè¿‡UndoManagerè®°å½•æ“ä½œçŠ¶æ€
+ * 3. å®ç°æ’¤é”€åŠŸèƒ½ï¼Œundoæ“ä½œæ ¹æ®UndoModelè®°å½•çš„çŠ¶æ€ï¼Œæ¢å¤åˆ°æŒ‡å®šä½ç½®çš„çŠ¶æ€
+ * 4. åè°ƒè§†å›¾æ›´æ–°ï¼Œé€šè¿‡CardViewçš„æ¥å£æ‰§è¡Œå¡ç‰Œç§»åŠ¨åŠ¨ç”»
  */
 class GameController {
 public:
-    //GameController(GameModel gameModel);
+    /**
+     * @brief æ„é€ å‡½æ•°
+     * @param gameModel æ¸¸æˆæ¨¡å‹
+     * @param playfieldOffset ä¸»ç‰ŒåŒºåç§»ï¼Œé»˜è®¤Vec2::ZERO
+     * @param stackOffset å¤‡ç”¨ç‰Œå †åç§»ï¼Œé»˜è®¤Vec2::ZERO
+     */
     GameController(GameModel gameModel,
         const cocos2d::Vec2& playfieldOffset = cocos2d::Vec2::ZERO,
         const cocos2d::Vec2& stackOffset = cocos2d::Vec2::ZERO);
+
+    /**
+     * @brief ææ„å‡½æ•°
+     */
     ~GameController();
 
-    // Ñ¡ÔñÖ÷ÅÆ¶ÑÖĞ·­¿ªµÄÖ½ÅÆ£¬µã»÷Ö÷ÅÆ¶ÑÖĞµÄÅÆºÍµ×ÅÆÆ¥Åä
+    /**
+     * @brief é€‰æ‹©ä¸»ç‰ŒåŒºå¡ç‰Œå¹¶åŒ¹é…ï¼Œå¤„ç†å¡ç‰Œç§»åŠ¨å’ŒåŒ¹é…é€»è¾‘
+     * @param selectedCard é€‰ä¸­çš„å¡ç‰Œ
+     * @return bool æ˜¯å¦æˆåŠŸ
+     */
     bool selectCardFromPlayefieldAndMatch(CardModel& selectedCard);
 
-    // µã»÷StackÇøµÄ¿¨ÅÆ£¬¼ÇÂ¼Æä×´Ì¬µ½UndoModelÖĞ
+    /**
+     * @brief ç‚¹å‡»å¤‡ç”¨ç‰Œå †å¡ç‰Œï¼Œè®°å½•çŠ¶æ€åˆ°UndoModel
+     * @param card ç‚¹å‡»çš„å¡ç‰Œ
+     */
     void clickStackCard(CardModel& card);
 
-    // ´¦Àí¿¨Æ¬µã»÷ÊÂ¼ş
+    /**
+     * @brief å¤„ç†å¡ç‰Œç‚¹å‡»äº‹ä»¶
+     * @param card ç‚¹å‡»çš„å¡ç‰Œ
+     */
     void handleCardClicked(CardModel& card);
 
-    // µã»÷»ØÍË°´Å¥
+    /**
+     * @brief æ’¤é”€æ“ä½œ
+     * @return bool æ˜¯å¦æˆåŠŸæ’¤é”€
+     */
     bool undo();
 
+    /**
+     * @brief å¤„ç†æ ‡ç­¾ç‚¹å‡»
+     */
     void handleLabelClick();
+
 private:
     GameModel _gameModel;
     UndoManager _undoManager;
 
-    // »ñÈ¡µ×ÅÆµÄCardModel
+    /**
+     * @brief è·å–åº•éƒ¨çš„å¡ç‰Œ
+     * @return CardModel åº•éƒ¨çš„å¡ç‰Œ
+     */
     CardModel getBottomCard();
 
-    // ¼ì²éÁ½ÕÅÅÆÊÇ·ñÆ¥Åä
+    /**
+     * @brief æ£€æŸ¥ä¸¤å¼ å¡ç‰Œæ˜¯å¦åŒ¹é…
+     * @param card1 ç¬¬ä¸€å¼ å¡ç‰Œ
+     * @param card2 ç¬¬äºŒå¼ å¡ç‰Œ
+     * @return bool æ˜¯å¦åŒ¹é…
+     */
     bool isCardMatch(const CardModel& card1, const CardModel& card2);
 
-    // ÒÆ¶¯¿¨ÅÆµ½Ô­Î»ÖÃ
+    /**
+     * @brief å°†å¡ç‰Œç§»åŠ¨åˆ°åŸå§‹ä½ç½®
+     * @param state æ’¤é”€å¡ç‰ŒçŠ¶æ€
+     */
     void moveCardToOriginalPosition(const UndoCardState& state);
 
-    // ¸ù¾İCardModel»ñÈ¡CardManager
+    /**
+     * @brief æ ¹æ®CardModelè·å–CardManager
+     * @param card å¡ç‰Œæ¨¡å‹
+     * @return CardManager* å¡ç‰Œç®¡ç†å™¨æŒ‡é’ˆ
+     */
     CardManager* getCardManager(const CardModel& card);
 
     cocos2d::Vec2 _playfieldOffset;

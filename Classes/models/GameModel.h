@@ -1,3 +1,8 @@
+/*****************************************************************//**
+ * @file    GameModel.h
+ * @author  59641
+ * @date    January 2026
+ *********************************************************************/
 #pragma once
 
 #include "cocos2d.h"
@@ -10,47 +15,71 @@
 USING_NS_CC;
 
 
+/**
+ * @brief æ¸¸æˆæ¨¡å‹ç±»ï¼Œç®¡ç†æ¸¸æˆçŠ¶æ€
+ */
 class GameModel {
 public:
+    /**
+     * @brief æ„é€ å‡½æ•°
+     * @param config å…³å¡é…ç½®
+     */
     GameModel(LevelConfig* config) {
 
         if (config) {
-            // ³õÊ¼»¯ÓÎÏ·ÇøÓò¿¨Æ¬
+            // åˆå§‹åŒ–æ¸¸æˆå¡ç‰Œ
             _playfield = config->getPlayfield();
-            // ³õÊ¼»¯¶Ñµş¿¨Æ¬
+            // åˆå§‹åŒ–å¤‡ç”¨å¡ç‰Œ
             _stackfield = config->getStack();
 
             _undoModel.clearHistory();
         }
     }
 
-    // »ñÈ¡ playfield ÏòÁ¿
+    /**
+     * @brief è·å–ä¸»ç‰ŒåŒºå¡ç‰Œ
+     * @return const std::vector<CardModel>& ä¸»ç‰ŒåŒºå¡ç‰Œ
+     */
     const std::vector<CardModel>& getPlayfield() const {
         return _playfield;
     }
 
-    // »ñÈ¡ stackfield ÏòÁ¿
+    /**
+     * @brief è·å–å¤‡ç”¨ç‰Œå †å¡ç‰Œ
+     * @return const std::vector<CardModel>& å¤‡ç”¨ç‰Œå †å¡ç‰Œ
+     */
     const std::vector<CardModel>& getStackfield() const {
         return _stackfield;
     }
 
-    // »ñÈ¡ UndoModel ¶ÔÏó
+    /**
+     * @brief è·å–æ’¤é”€æ¨¡å‹
+     * @return UndoModel& æ’¤é”€æ¨¡å‹
+     */
     UndoModel& getUndoModel() {
         return _undoModel;
     }
 
-
-    // Ïò playfield Ìí¼ÓÒ»ÕÅ¿¨Æ¬
+    /**
+     * @brief æ·»åŠ å¡ç‰Œåˆ°ä¸»ç‰ŒåŒº
+     * @param card å¡ç‰Œ
+     */
     void addCardToPlayfield(const CardModel& card) {
         _playfield.push_back(card);
     }
 
-    // Ïò stackfield Ìí¼ÓÒ»ÕÅ¿¨Æ¬
+    /**
+     * @brief æ·»åŠ å¡ç‰Œåˆ°å¤‡ç”¨ç‰Œå †
+     * @param card å¡ç‰Œ
+     */
     void addCardToStackfield(const CardModel& card) {
         _stackfield.push_back(card);
     }
 
-    // ´Ó playfield ÒÆ³ıÒ»ÕÅ¿¨Æ¬
+    /**
+     * @brief ä»ä¸»ç‰ŒåŒºç§»é™¤å¡ç‰Œ
+     * @param id å¡ç‰ŒID
+     */
     void removeCardFromPlayfield(int id) {
         for (auto it = _playfield.begin(); it != _playfield.end(); ++it) {
             if (it->_id == id) {
@@ -60,7 +89,10 @@ public:
         }
     }
 
-    // ´Ó stackfield ÒÆ³ıÒ»ÕÅ¿¨Æ¬
+    /**
+     * @brief ä»å¤‡ç”¨ç‰Œå †ç§»é™¤å¡ç‰Œ
+     * @param id å¡ç‰ŒID
+     */
     void removeCardFromStackfield(int id) {
         for (auto it = _stackfield.begin(); it != _stackfield.end(); ++it) {
             if (it->_id == id) {
@@ -71,8 +103,8 @@ public:
     }
 
 private:
-    std::vector<CardModel> _playfield; // ÓÎÏ·³¡µØÇøÓòµÄ¿¨Æ¬ÏòÁ¿
-    std::vector<CardModel> _stackfield; // ¶ÑµşÇøÓòµÄ¿¨Æ¬ÏòÁ¿
-    UndoModel _undoModel; // ÓÃÓÚ¼ÇÂ¼³·ÏúÀúÊ·µÄ¶ÔÏó
+    std::vector<CardModel> _playfield; ///< æ¸¸æˆä¸»ç‰ŒåŒºçš„å¡ç‰Œåˆ—è¡¨
+    std::vector<CardModel> _stackfield; ///< å¤‡ç”¨ç‰Œå †çš„å¡ç‰Œåˆ—è¡¨
+    UndoModel _undoModel; ///< ç”¨äºè®°å½•æ“ä½œå†å²çš„æ¨¡å‹
 };
 

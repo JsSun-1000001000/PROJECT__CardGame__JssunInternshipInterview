@@ -1,11 +1,8 @@
 /*****************************************************************//**
- * \file   CardResConfig.h
- * \brief  
- * 
- * \author 59641
- * \date   January 2026
+ * @file    CardResConfig.h
+ * @author  59641
+ * @date    January 2026
  *********************************************************************/
-
 #pragma once
 #pragma once
 

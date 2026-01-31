@@ -27,14 +27,28 @@
 
 #include "cocos2d.h"
 
+/**
+ * @brief HelloWorld场景类，用于显示游戏主界面。
+ */
 class HelloWorld : public cocos2d::Scene
 {
 public:
+    /**
+     * @brief 创建场景。
+     * @return cocos2d::Scene* 场景对象
+     */
     static cocos2d::Scene* createScene();
 
+    /**
+     * @brief 初始化场景。
+     * @return bool 初始化是否成功
+     */
     virtual bool init();
     
-    // a selector callback
+    /**
+     * @brief 菜单关闭回调。
+     * @param pSender 发送者
+     */
     void menuCloseCallback(cocos2d::Ref* pSender);
     
     // implement the "static create()" method manually

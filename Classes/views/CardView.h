@@ -1,3 +1,8 @@
+/*****************************************************************//**
+ * @file    CardView.h
+ * @author  59641
+ * @date    January 2026
+ *********************************************************************/
 #pragma once
 
 #include "cocos2d.h"
@@ -10,45 +15,82 @@ class CardManager;
 USING_NS_CC;
 
 
+/**
+ * @brief å¡ç‰Œè§†å›¾ç±»ï¼Œè´Ÿè´£å¡ç‰Œçš„æ˜¾ç¤º
+ */
 class CardView : public Node {
 public:
     /**
-     * @brief ¾²Ì¬´´½¨·½·¨£¨¹¤³§Ä£Ê½£©
-     * @param model ¿¨ÅÆÊı¾İÄ£ĞÍ£¨°üº¬»¨É«¡¢µãÊı£©
+     * @brief é™æ€åˆ›å»ºæ–¹æ³•ï¼Œä½¿ç”¨å·¥å‚æ¨¡å¼
+     * @param model å¡ç‰Œæ¨¡å‹ï¼ŒåŒ…å«é¢œè‰²å’Œç‚¹æ•°
+     * @param offset åç§»é‡
+     * @return CardView* åˆ›å»ºçš„å¡ç‰Œè§†å›¾
      */
     static CardView* create(const CardModel& model, const Vec2& offset);
-    // ¿¨ÅÆµã»÷»Øµ÷ÀàĞÍ
+
+    /**
+     * @brief ç‚¹å‡»å›è°ƒç±»å‹å®šä¹‰
+     */
     using ClickCallback = std::function<void(CardView* cardView)>;
-    // ÉèÖÃµã»÷»Øµ÷
+
+    /**
+     * @brief è®¾ç½®ç‚¹å‡»å›è°ƒ
+     * @param callback ç‚¹å‡»å›è°ƒå‡½æ•°
+     */
     void setClickCallback(const ClickCallback& callback);
 
-    // ×ÊÔ´¼ÓÔØ
+    /**
+     * @brief åŠ è½½èƒŒæ™¯èµ„æº
+     */
     void loadBackground();
+
+    /**
+     * @brief åŠ è½½å°æ•°å­—èµ„æº
+     * @param model å¡ç‰Œæ¨¡å‹
+     */
     void loadSmallNumber(const CardModel& model);
+
+    /**
+     * @brief åŠ è½½å¤§æ•°å­—èµ„æº
+     * @param model å¡ç‰Œæ¨¡å‹
+     */
     void loadBigNumber(const CardModel& model);
+
+    /**
+     * @brief åŠ è½½èŠ±è‰²å›¾æ ‡èµ„æº
+     * @param model å¡ç‰Œæ¨¡å‹
+     */
     void loadSuitIcon(const CardModel& model);
 
-    bool init(const CardModel& model, const Vec2& offset);  // ³õÊ¼»¯
+    /**
+     * @brief åˆå§‹åŒ–æ–¹æ³•
+     * @param model å¡ç‰Œæ¨¡å‹
+     * @param offset åç§»é‡
+     * @return bool åˆå§‹åŒ–æ˜¯å¦æˆåŠŸ
+     */
+    bool init(const CardModel& model, const Vec2& offset);
 
-    // ¼ì²é´¥ÃşµãÊÇ·ñÔÚ¿¨ÅÆÇøÓòÄÚ
+    /**
+     * @brief æ£€æŸ¥è§¦æ‘¸ç‚¹æ˜¯å¦åœ¨å¡ç‰Œå†…éƒ¨
+     * @param touchPos è§¦æ‘¸ä½ç½®
+     * @return bool æ˜¯å¦åœ¨å†…éƒ¨
+     */
     bool isTouchInside(const cocos2d::Vec2& touchPos);
 
-    CardManager* _cardManager;     // Ìí¼Ó CardManager ÊµÀı
+    CardManager* _cardManager;     ///< å…³è”çš„ CardManager å®ä¾‹
 
 private:
-    // ×Ó½Úµã³ÉÔ± 
-    Sprite* _background = nullptr;  // ¿¨ÅÆ±³¾°
-    Sprite* _smallNumber = nullptr; // ×óÉÏ½ÇĞ¡Êı×Ö
-    Sprite* _bigNumber = nullptr;   // ÖĞ¼ä´óÊı×Ö
-    Sprite* _suitIcon = nullptr;    // ÓÒÉÏ½Ç»¨É«Í¼±ê
+    Sprite* _background = nullptr;  ///< å¡ç‰ŒèƒŒæ™¯
+    Sprite* _smallNumber = nullptr; ///< å·¦ä¸Šè§’å°æ•°å­—
+    Sprite* _bigNumber = nullptr;   ///< ä¸­å¿ƒå¤§æ•°å­—
+    Sprite* _suitIcon = nullptr;    ///< å³ä¸Šè§’èŠ±è‰²å›¾æ ‡
 
-    // ²¼¾Ö²ÎÊı£¨¿É¸ù¾İÃÀÊõ×ÊÔ´µ÷Õû£©
-    const Vec2 _smallNumberPos = Vec2(-80, 130);  // ×óÉÏ½ÇĞ¡Êı×ÖÎ»ÖÃ£¨Ïà¶Ô±³¾°ÖĞĞÄ£©
-    const Vec2 _suitIconPos = Vec2(80, 130);     // ÓÒÉÏ½Ç»¨É«Í¼±êÎ»ÖÃ£¨Ïà¶Ô±³¾°ÖĞĞÄ£©
-    const Vec2 _bigNumberPos = Vec2(0, 0);       // ÖĞ¼ä´óÊı×ÖÎ»ÖÃ£¨Ïà¶Ô±³¾°ÖĞĞÄ£©
+    const Vec2 _smallNumberPos = Vec2(-80, 130);  ///< å·¦ä¸Šè§’å°æ•°å­—ä½ç½®ï¼Œç›¸å¯¹äºå¡ç‰Œä¸­å¿ƒ
+    const Vec2 _suitIconPos = Vec2(80, 130);     ///< å³ä¸Šè§’èŠ±è‰²å›¾æ ‡ä½ç½®ï¼Œç›¸å¯¹äºå¡ç‰Œä¸­å¿ƒ
+    const Vec2 _bigNumberPos = Vec2(0, 0);       ///< ä¸­å¿ƒå¤§æ•°å­—ä½ç½®ï¼Œç›¸å¯¹äºå¡ç‰Œä¸­å¿ƒ
 
-    ClickCallback _clickCallback;  // µã»÷»Øµ÷º¯Êı
-    bool _isSelected;              // ¿¨ÅÆÊÇ·ñ±»Ñ¡ÖĞ×´Ì¬
+    ClickCallback _clickCallback;  ///< ç‚¹å‡»å›è°ƒå‡½æ•°
+    bool _isSelected;              ///< æ ‡è®°æ˜¯å¦é€‰ä¸­çŠ¶æ€
 };
 
 

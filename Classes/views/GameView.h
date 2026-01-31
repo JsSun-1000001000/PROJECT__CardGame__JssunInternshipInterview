@@ -1,3 +1,8 @@
+/*****************************************************************//**
+ * @file    GameView.h
+ * @author  59641
+ * @date    January 2026
+ *********************************************************************/
 #pragma once
 
 #include "cocos2d.h"
@@ -10,42 +15,48 @@
 USING_NS_CC;
 
 
+/**
+ * @brief æ¸¸æˆè§†å›¾ç±»ï¼Œè´Ÿè´£æ¸¸æˆç•Œé¢çš„æ˜¾ç¤º
+ */
 class GameView : public Node {
 public:
     /**
-     * @brief ¾²Ì¬´´½¨ GameView µÄ·½·¨
-     * @param model GameModel ¶ÔÏó£¬ÓÃÓÚ³õÊ¼»¯ GameView
+     * @brief é™æ€åˆ›å»º GameView çš„æ–¹æ³•
+     * @param model GameModel å¯¹è±¡ï¼Œç”¨äºåˆå§‹åŒ– GameView
+     * @return GameView* åˆ›å»ºçš„æ¸¸æˆè§†å›¾
      */
     static GameView* create(GameModel& model);
 
 protected:
     /**
-     * @brief ³õÊ¼»¯ GameView µÄÂß¼­
-     * @param model GameModel ¶ÔÏó£¬ÓÃÓÚ³õÊ¼»¯ GameView
-     * @return ³õÊ¼»¯³É¹¦·µ»Ø true£¬·ñÔò·µ»Ø false
+     * @brief åˆå§‹åŒ– GameView çš„é€»è¾‘
+     * @param model GameModel å¯¹è±¡ï¼Œç”¨äºåˆå§‹åŒ– GameView
+     * @return åˆå§‹åŒ–æˆåŠŸè¿”å› trueï¼Œå¦åˆ™è¿”å› false
      */
     bool init(GameModel& model);
 
     /**
-     * @brief ¸ù¾İ GameModel Éú³É¶ÔÓ¦µÄ CardView Êı×é
-     * @param model GameModel ¶ÔÏó£¬°üº¬¿¨Æ¬ĞÅÏ¢
+     * @brief æ ¹æ® GameModel ç”Ÿæˆç›¸åº”çš„ CardView åˆ—è¡¨
+     * @param model GameModel å¯¹è±¡ï¼ŒåŒ…å«å¡ç‰Œä¿¡æ¯
      */
     void generateCardViews(GameModel& model);
 
 private:
-    std::vector<CardView*> _playfieldCardViews; // ´æ´¢ playfield ¶ÔÓ¦µÄ CardView Êı×é
-    std::vector<CardView*> _stackfieldCardViews; // ´æ´¢ stackfield ¶ÔÓ¦µÄ CardView Êı×é
+    std::vector<CardView*> _playfieldCardViews; ///< å­˜å‚¨ playfield å¯¹åº”çš„ CardView åˆ—è¡¨
+    std::vector<CardView*> _stackfieldCardViews; ///< å­˜å‚¨ stackfield å¯¹åº”çš„ CardView åˆ—è¡¨
 
-    // Label ³ÉÔ±±äÁ¿
-    cocos2d::Label* _statusLabel;
+    cocos2d::Label* _statusLabel; ///< çŠ¶æ€æ ‡ç­¾
 
+    GameController* _gameController; ///< æ¸¸æˆæ§åˆ¶å™¨
 
-    // GameController ³ÉÔ±±äÁ¿
-    GameController* _gameController;
-    // ´¦Àí Label µã»÷µÄ»Øµ÷º¯Êı
+    /**
+     * @brief å¤„ç† Label ç‚¹å‡»äº‹ä»¶çš„å›è°ƒå‡½æ•°
+     */
     void onLabelClicked();
 
-    // ×¢²á´¥ÃşÊÂ¼ş
+    /**
+     * @brief æ³¨å†Œè§¦æ‘¸äº‹ä»¶
+     */
     void registerTouchEvents();
 };
 
