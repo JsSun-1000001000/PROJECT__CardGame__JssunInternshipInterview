@@ -26,6 +26,7 @@ using namespace rapidjson;
 class LevelConfig final {
 public:
 
+
     std::vector<CardModel> getPlayfield() {
         return _playfieldCards;
     }

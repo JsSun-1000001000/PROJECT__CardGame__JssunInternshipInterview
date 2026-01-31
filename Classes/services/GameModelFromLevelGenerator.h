@@ -10,7 +10,7 @@
 USING_NS_CC;
 
 /**
- * @brief 服务层：将静态关卡配置（LevelConfig）转换为运行时游戏模型（GameModel）
+ * @brief 服务层：将LevelConfig转换为运行时GameModel
  * @note 遵循 Service 层规范：无状态、纯函数式接口、可静态调用
  */
 class GameModelFromLevelGenerator {
@@ -18,9 +18,8 @@ class GameModelFromLevelGenerator {
 public:
     /**
      * @brief 生成 GameModel 对象
-     * @param config 关卡配置数据（从 LevelConfigLoader 加载）
+     * @param config 关卡配置数据
      * @return 初始化后的 GameModel 对象
-     * @throws 若 config 为空或卡牌数据非法，返回空模型（需根据实际情况处理异常）
      */
     static GameModel generateGameModel(const std::string levelFile) {
         //auto config = LevelConfigLoader::loadLevelConfig("level_1.json");

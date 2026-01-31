@@ -15,14 +15,16 @@ CardView* CardView::create(const CardModel& model, const Vec2& offset) {
 void CardView::setClickCallback(const ClickCallback& callback) {
     _clickCallback = callback;
     _cardManager->setCardClickedCallback([this, callback](CardModel& model) {
-        if (callback) {
-            callback(this);
-        }
+                                            if (callback) {
+                                                callback(this);
+                                            }
         });
 }
 
 bool CardView::isTouchInside(const Vec2& touchPos) {
-    if (!_background) return false;
+    if (!_background) {
+        return false;
+    }
 
     return _background->getBoundingBox().containsPoint(touchPos);
 }

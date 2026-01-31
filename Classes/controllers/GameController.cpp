@@ -1,3 +1,10 @@
+/*****************************************************************//**
+ * \file   GameController.cpp
+ * \brief  
+ * 
+ * \author 59641
+ * \date   January 2026
+ *********************************************************************/
 #include "GameController.h"
 #include <iostream>
 #include "services/CardIdManagerMap.h"
@@ -8,69 +15,137 @@
 //    CCLOG("GameController: undoMode size=%d", _undoManager.getUndoSize());
 //}
 
+/**
+ * .
+ * 
+ * \param gameModel
+ * \param playfieldOffset
+ * \param stackOffset
+ */
 GameController::GameController(GameModel gameModel,
-    const cocos2d::Vec2& playfieldOffset,
-    const cocos2d::Vec2& stackOffset)
-    : _gameModel(gameModel), _undoManager(gameModel.getUndoModel())
-    , _playfieldOffset(playfieldOffset), _stackOffset(stackOffset) {
+                                const cocos2d::Vec2& playfieldOffset,
+                                const cocos2d::Vec2& stackOffset): _gameModel(gameModel), _undoManager(gameModel.getUndoModel()),
+                                _playfieldOffset(playfieldOffset),
+                                _stackOffset(stackOffset) {
+
     CCLOG("GameController: undoMode size=%d", _undoManager.getUndoSize());
+
 }
+
 
 GameController::~GameController() {}
 
+/**
+ * .
+ * 
+ * \param selectedCard
+ * \return 
+ */
 bool GameController::selectCardFromPlayefieldAndMatch(CardModel& selectedCard) {
+
     if (_undoManager.getUndoSize() == 0) {
+
         return false;
     }
+
     CardModel bottomCard = getBottomCard();
+
     CCLOG("GameController: playerfield stack click");
+
     if (isCardMatch(selectedCard, bottomCard)) {
+
         // 记录当前状态
         UndoCardState state;
+
         state.id = selectedCard._id;
+
         state.position = selectedCard.getPosition();
+
         state.zone = selectedCard.getZone();
+
         _undoManager.recordUndoState(state);
+
         handleCardClicked(selectedCard);
+
         return true;
     }
     return false;
 }
 
+/**
+ * .
+ * 
+ * \param card
+ */
 void GameController::clickStackCard(CardModel& card) {
+
     UndoCardState state;
+
     state.id = card._id;
+
     state.position = card.getPosition();
+
     state.zone = card.getZone();
+
     _undoManager.recordUndoState(state);
+
     CardManager* cardManager = getCardManager(card);
+
     CCLOG("GameController: stack click");
+
     handleCardClicked(card);
 }
 
+/**
+ * .
+ * 
+ * \return 
+ */
 bool GameController::undo() {
+
     UndoCardState state;
+
     if (_undoManager.undo(state)) {
+
         moveCardToOriginalPosition(state);
+
         return true;
     }
     return false;
 }
 
+/**
+ * .
+ * 
+ * \return 
+ */
 CardModel GameController::getBottomCard() {
+
     UndoCardState state;
+
     CCLOG("GameController: undoModel size=%d", _undoManager.getUndoSize());
+
     if (_undoManager.undo(state)) {
+
         _undoManager.recordUndoState(state); // 放回记录
+
         auto& playfield = _gameModel.getPlayfield();
+
         for (const auto& card : playfield) {
+
             if (card._id == state.id) {
+
                 return card;
+
             }
         }
+
         auto& stackfield = _gameModel.getStackfield();
+
         for (const auto& card : stackfield) {
+
             if (card._id == state.id) {
+
                 return card;
             }
         }
@@ -78,40 +153,74 @@ CardModel GameController::getBottomCard() {
     return CardModel(CardFaceType::CFT_ACE, CardSuitType::CST_SPADES, cocos2d::Vec2::ZERO);
 }
 
+/**
+ * .
+ * 
+ * \param card1
+ * \param card2
+ * \return 
+ */
 bool GameController::isCardMatch(const CardModel& card1, const CardModel& card2) {
+
     int face1 = static_cast<int>(card1.getFace());
+
     int face2 = static_cast<int>(card2.getFace());
+
     return (face1 == face2 + 1) || (face1 == face2 - 1);
 }
 
+/**
+ * .
+ * 
+ * \param state
+ */
 void GameController::moveCardToOriginalPosition(const UndoCardState& state) {
     cocos2d::Vec2 displayPos = state.position + (state.zone == CardZone::Stack ? _stackOffset : _playfieldOffset);
     //
     auto& playfield = _gameModel.getPlayfield();
+
     auto& stackfield = _gameModel.getStackfield();
+
     for (auto card : playfield) {
+
         if (card._id == state.id) {
+
             CardManager* cardManager = getCardManager(card);
+
             if (cardManager) {
+
                 //auto moveTo = cocos2d::MoveTo::create(0.5f, state.position);
                 auto moveTo = cocos2d::MoveTo::create(0.5f, displayPos);
+
                 cardManager->getView()->runAction(moveTo);
+
                 card.setPosition(state.position);
+
                 card.setZone(state.zone);
+
                 cardManager->getView()->setZOrder(0);
+
             }
             return;
         }
     }
     for (auto card : stackfield) {
+
         if (card._id == state.id) {
+
             CardManager* cardManager = getCardManager(card);
+
             if (cardManager) {
+
                 //auto moveTo = cocos2d::MoveTo::create(0.5f, state.position);
                 auto moveTo = cocos2d::MoveTo::create(0.5f, displayPos);
+
                 cardManager->getView()->runAction(moveTo);
+
                 card.setPosition(state.position);
+
                 card.setZone(state.zone);
+
                 cardManager->getView()->setZOrder(0);
             }
             return;
@@ -120,24 +229,41 @@ void GameController::moveCardToOriginalPosition(const UndoCardState& state) {
 }
 
 CardManager* GameController::getCardManager(const CardModel& card) {
+
     CardManager* manager = CardIdManagerMap::getInstance().getCardManager(card._id);
+
     return manager;
 }
 
 
-
+/**
+ * .
+ * 
+ * \param card
+ */
 void GameController::handleCardClicked(CardModel& card) {
+
     CCLOG("GameController: card zone=%d", static_cast<int>(card.getZone()));
+
     if (card.getZone() != CardZone::Hand) {
+
         //CCLOG(u8"卡牌区域为", card.getZone());
         cocos2d::Vec2 newPos(700, 400);
+
         CardManager* cardManager = getCardManager(card);
+
         card.setZone(CardZone::Hand);
+
         card.setPosition(newPos);
+
         if (cardManager) {
+
             CCLOG("GameController: move card id=%d", card._id);
+
             auto moveTo = cocos2d::MoveTo::create(0.5f, newPos);
+
             cardManager->getView()->runAction(moveTo);
+
             if (_undoManager.getUndoSize() != 0) {
                 CardModel lastCard = getBottomCard();
                 cardManager->getView()->setLocalZOrder(getCardManager(lastCard)->getView()->getLocalZOrder() + 1);
@@ -146,6 +272,10 @@ void GameController::handleCardClicked(CardModel& card) {
     }
 }
 
+/**
+ * .
+ * 
+ */
 void GameController::handleLabelClick() {
     // 处理 Label 点击逻辑，这里调用撤销操作
     undo();

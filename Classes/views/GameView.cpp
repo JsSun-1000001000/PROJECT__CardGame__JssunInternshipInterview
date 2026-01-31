@@ -22,6 +22,7 @@ bool GameView::init(GameModel& model) {
     //_gameController = new GameController(model);
     _gameController = new GameController(model, kPlayfieldOffset, kStackOffset);
     generateCardViews(model);
+
     // 1. 创建并添加 Label
     _statusLabel = cocos2d::Label::createWithSystemFont(std::string(reinterpret_cast<const char*>(u8"\u56de\u9000")), "Microsoft YaHei", 36); // 确保路径正确
     _statusLabel->setPosition(900, 400);  // 设置位置

@@ -1,8 +1,21 @@
+/*****************************************************************//**
+ * \file   LevelConfigLoader.cpp
+ * \brief  
+ * 
+ * \author 59641
+ * \date   January 2026
+ *********************************************************************/
 #include "LevelConfigLoader.h"
 
 
 int LevelConfigLoader::currentId = 0;
 
+/**
+ * .
+ * \brief loadLevelConfig
+ * \param fileName
+ * \return 
+ */
 LevelConfig* LevelConfigLoader::loadLevelConfig(std::string fileName) {
     std::string jsonStr = cocos2d::FileUtils::getInstance()->getStringFromFile(fileName);
     rapidjson::Document d;
@@ -45,6 +58,14 @@ LevelConfig* LevelConfigLoader::loadLevelConfig(std::string fileName) {
     return config;
 }
 
+/**
+ * .
+ * \brief parseCardModel
+ * \param cardNode
+ * \param target
+ * \param zone
+ * \return 
+ */
 bool LevelConfigLoader::parseCardModel(const rapidjson::Value& cardNode, std::vector<CardModel>& target, CardZone zone) {
     if (!cardNode.IsObject()) return false;
 

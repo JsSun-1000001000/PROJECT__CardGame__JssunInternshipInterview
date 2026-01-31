@@ -8,21 +8,12 @@
 #include "configs/models/LevelConfig.h"
 
 USING_NS_CC;
-/**
- * @brief 游戏全局数据模型类（遵循MVC架构的models层规范）
- *
- * @职责：
- * 1. 维护游戏中两个核心区域的卡牌集合：
- *    - _playfield：主牌区卡牌列表，对应LevelConfig中的Playfield配置（）；
- *    - _stackfield：备用牌堆卡牌列表，对应LevelConfig中的Stack配置（）。
- * 2. 管理撤销操作的历史记录，通过UndoModel实现状态回退功能（）。
- * 3. 提供卡牌集合的增删改查接口，供控制器层（controllers）调用以更新游戏状态（）。
- *
- */
+
 
 class GameModel {
 public:
     GameModel(LevelConfig* config) {
+
         if (config) {
             // 初始化游戏区域卡片
             _playfield = config->getPlayfield();

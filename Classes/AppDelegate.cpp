@@ -135,10 +135,14 @@ void AppDelegate::applicationDidEnterBackground() {
     Director::getInstance()->stopAnimation();
 
 #if USE_AUDIO_ENGINE
+
     AudioEngine::pauseAll();
+
 #elif USE_SIMPLE_AUDIO_ENGINE
+
     SimpleAudioEngine::getInstance()->pauseBackgroundMusic();
     SimpleAudioEngine::getInstance()->pauseAllEffects();
+
 #endif
 }
 

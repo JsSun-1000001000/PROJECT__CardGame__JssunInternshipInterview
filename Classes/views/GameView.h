@@ -8,21 +8,8 @@
 #include "controllers/GameController.h"
 
 USING_NS_CC;
-/**
- * @brief 游戏主视图类（遵循MVC架构的views层规范）
- *
- * @职责：
- * 1. 基于GameModel数据渲染游戏主界面，包括主牌区（playfield）和备用牌堆（stackfield）；
- * 2. 管理所有CardView实例的生命周期，根据模型数据动态生成或销毁卡牌视图；
- * 3. 处理全局触摸事件和UI交互（如状态标签点击），并通过回调通知控制器；
- * 4. 提供游戏状态的可视化展示（如_statusLabel显示当前游戏状态）。
- *
- * @渲染结构：
- * - _playfieldCardViews：主牌区卡牌视图集合，对应GameModel中的_playfield；
- * - _stackfieldCardViews：备用牌堆卡牌视图集合，对应GameModel中的_stackfield；
- * - _statusLabel：游戏状态文本标签，这里是回退标签。
- *
- */
+
+
 class GameView : public Node {
 public:
     /**
